@@ -1,0 +1,428 @@
+
+\documentclass[%
+pdf,
+%nocolorBG,
+colorBG,
+slideColor,
+tcrico,
+%slideBW,
+%draft,
+%frames
+%azure
+%contemporain
+%nuancegris
+%troispoints
+%lignesbleues
+%darkblue
+%alienglow
+%autumn
+%default
+%gyom
+%blends
+]{prosper}
+\usepackage{amsmath}
+%\usepackage[table]{xcolor}
+\usepackage{colortbl}
+\usepackage{graphicx}
+\usepackage{subfigure}
+\usepackage{algorithm2e}
+
+\begin{document}
+
+
+%\begin{slide}{Knowledge Based Technologies}
+%Working notes.
+%Misc Material:
+%\begin{itemize}
+% \item  http://jmvidal.cse.sc.edu/talks/analyticallearning/allslides.html
+%  \item  
+%\end{itemize}
+%\end{slide}
+
+
+
+\begin{slide}{Knowledge Based Technologies}
+	\textbf{Lecture 8} 
+	\newline
+	\textbf{An Introduction to Analytical Learning}
+
+	\small
+	John Moore \& Thomas Collins
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{Overview}
+\tiny
+		\begin{itemize}
+		\item To date we have studied inductive learning methods (learning from examples).
+		\item Induction fails when there is very little data. 
+			\begin{itemize}
+			\item If the hypothesis space $H$ is finite, and $D$ is a sequence of $m \geq 1$ independent random examples of some target concept there exists a verifiable and bounded probability that the learner will output an erroneous hypothesis
+    			\item That is, any consistent learner can PAC-learn any target concept in $H$ with $m$ examples, where PAC-learn means that the hypothesis is probably ($1 - \delta$) approximately (within error ε) correct.
+			\end{itemize}
+		\item Can we address that bound?
+    		\item Yes, if we re-state the learning problem
+		\item Explanation-based learning \dots
+		\end{itemize}
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{Explanation Based Learning}
+\tiny
+	\begin{itemize}
+	 \item Learning algorithm accepts explicit prior knowledge as an input, in addition to the training data.
+    	\item Inverted deduction systems also use background knowledge, but they use it to augment the description of instances. \[\forall_{\langle x_{i}, f(x_i) \rangle \in D} B \wedge h \wedge x_{i} \models f(x_{i}) \] This results in increasing the size of H.
+    	\item In explanation-based learning the prior knowledge is used to reduce the size of H. EBL assumes that \[ \forall_{\langle x_{i}, f(x_i) \rangle \in D} B' \wedge x_{i} \models f(x_{i}) \] and outputs $h$ such that \[ \forall_{\langle x_{i}, f(x_i) \rangle \in D} h \wedge x_{i} \models f(x_{i}) \]\[ D \wedge B' \models h \]
+	\end{itemize}
+
+\end{slide}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{An Example }
+	\begin{figure}
+		\centering
+		\includegraphics[scale=0.35]{./../bookps/chess.ps}
+	\end{figure}
+\tiny
+	\begin{itemize}
+	 \item  Want program to recognise "chessboard positions in which black will lose its queen within two moves."
+    \item Because there are so many possible chessboards we would nee to provide a lot of examples.
+    \item And yet, humans can learn this concept really quickly. Why?
+    \item Humans appear to rely heavily on explaining the training example in terms of their prior knowledge.
+
+	\end{itemize}
+
+\end{slide}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{Explanations}
+\tiny
+	\begin{itemize}
+	\item The explanation tells us how to rationally  generalise from the details of the correct training example to a correct general hypothesis.
+	\item  Namely, the features of the training example that are mentioned in the explanation are the ones that should be included in the hypothesis.
+\item What is the prior knowledge needed in the chess example?
+\item The knowledge about the legal moves of chess, the fact that players alternate moves, and the goal is to capture the king.
+\item Note that, in principle we could use this knowledge to calculate the optimal move for every board, but this is not practical in most situations
+	\end{itemize}
+\end{slide}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{slide}{Inductive vs. Analytical Learning}
+	\begin{itemize}
+	\item In inductive learning the learner is given $H$ and $D= \{\langle x_1, f(x_1) \rangle,\ldots,\langle x_n, f(x_n)\rangle\}$, where $f(x_i)$ is the target value for instance $x_i$. Learner must pick $h \in H$ that is consistent with $D$.
+    	\item In analytical learning the learner is given $H$, $D$, and a domain theory $B$. Learner must pick $h \in H$ that is consistent with both $D$, and $B$.
+    	\item We say that $h$ is consistent with $B$ if \[ \neg (B \rightarrow \neg h) \]
+	\end{itemize}
+\end{slide}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{The Inductive Generalisation Problem}
+\tiny
+	{\bf Given:}
+	\begin{itemize}
+	\item Instance space $X$
+	\item Hypothesis space $H$
+	\item Training examples $D$ of some target function $f$. 
+	\[ D = \{
+	\langle x_{1}, f(x_{1}) \rangle, \dots \langle x_{n}, f(x_{n}) \rangle
+	\} \]
+	\end{itemize}
+	
+	{\bf Determine:}
+	\begin{itemize}
+	\item A hypothesis from $H$ consistent with training examples $D$.
+	\end{itemize}
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{The Analytical Generalisation Problem}
+\tiny
+	{\bf Given:}
+	\begin{itemize}
+	\item Instance space $X$
+	\item Hypothesis space $H$
+	\item Training examples $D$ of some target function $f$. 
+	\[ D = \{
+	\langle x_{1}, f(x_{1}) \rangle, \dots \langle x_{n}, f(x_{n}) \rangle
+	\} \]
+	\item {\em Domain theory $B$ for explaining training examples}
+	\end{itemize}
+	
+	{\bf Determine:}
+	\begin{itemize}
+	\item A hypothesis from $H$ consistent with both the training examples $D$ and domain
+	theory $B$.
+	\end{itemize}
+	
+	We say 
+	\begin{itemize}
+	\item
+	$B$ ''explains'' $\langle x, f(x) \rangle$ if $x + B \models f(x)$  
+	\item
+	$B$ is ''consistent with'' $h$ if  $B \not \models \neg h$
+	\end{itemize}
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{An Analytical Generalisation Problem}
+\tiny
+	{\bf Given:}
+	\begin{itemize}
+	\item Instances: pairs of physical objects
+	\item Hypotheses:  Sets of Horn clause rules, e.g.,
+	\[ SafeToStack(x,y) \gets Volume(x, vx) \wedge Type(y,Box) \]
+	
+	\item Training Examples: typical example is
+	\begin{tabbing}
+	\vspace{-.25 in}
+	% following sets up tab stops
+	xxxx\=xxxxxxxxxxxxxxxxxxxxx\=xxxxxxxxxxxxxxxxxxxx\= \kill 
+	$SafeToStack(Obj{\it 1}, Obj{\it 2})$ \\
+	\>\hskip-20pt$On(Obj{\it 1},Obj{\it 2})$	\>$Owner(Obj{\it 1}, Fred)$ \\
+	\>\hskip-20pt$Type(Obj{\it 1},Box)$	\>$Owner(Obj{\it 2}, Louise)$ \\
+	\>\hskip-20pt$Type(Obj{\it 2},Endtable)$ \>$Density(Obj{\it 1},0.3)$ \\
+	\>\hskip-20pt$Color(Obj{\it 1},Red)$	\>$Material(Obj{\it 1}, Cardbd)$ \\
+	\>\hskip-20pt$\ldots$
+	\end{tabbing}
+\end{itemize}
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{An Analytical Generalisation Problem}
+\tiny	
+\begin{itemize}
+ \item 
+	Domain Theory:
+	\begin{tabbing}
+	xxxx\=xxxxxxxxxxxxxxxxxxxxxxxx\=xxxxxxxxxxxxxxxxxxxx\= \kill 
+		\>\hskip-16pt$ SafeToStack(x,y) \gets \neg Fragile(y)$ \\
+		\>\hskip-16pt$SafeToStack(x,y) \gets Lighter(x,y)$ \\
+		\>\hskip-16pt$Lighter(x,y) \gets Wt(x,wx)\wedge Wt(y,wy)\wedge Less(wx,wy)$ \\
+		\>\hskip-16pt$\ldots$ \\
+	\end{tabbing}
+	\end{itemize}
+	\vspace{-.1in}
+	{\bf Determine:}
+	\begin{itemize}
+	\item A hypothesis from $H$ consistent with training examples and domain theory.
+	\end{itemize}
+\end{slide}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{Learning from Perfect Domain Theories}
+\tiny
+	\begin{itemize}
+ 	\item A perfect domain theory is correct and complete.
+    \item A domain theory is correct if each of its assertions is a truthful statement about the world.
+    \item A domain the is complete wrt target concept and X, if it covers every positive example in the instance space.
+    \item So, if we have a perfect domain theory, why do we need to learn?
+    \item Chess. Often the theory leads to too many deductions (large breadth) making it impossible to find the optimal strategy. The examples help to focus search.
+    \item Perfect domain theories are often unrealistic, but, learning in them is a first step before learning with imperfect theories (next chapter).
+    \item Prolog-EBG is an EBL learner. It uses sequential covering.
+\end{itemize}
+
+\end{slide}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{Learning from Perfect Domain Theories}
+\tiny
+	\texttt{Prolog-EBG}($TargetConcept, Examples, DomainTheory$)
+	
+	\begin{itemize}
+	\item $LearnedRules \gets \{\}$
+	\item $Pos \gets$ the positive examples from $Examples$ 
+	\item
+	for each $PositiveExample$ in $Pos$ that is not covered by $LearnedRules$, do
+	\begin{itemize}
+	\item[]\hspace*{-.18in}\hskip-12pt{\em 1. Explain:}
+	\item $Explanation \gets $ an explanation (proof) in terms of {\em
+	DomainTheory} that {\em PositiveExample} satisfies {\em TargetConcept}
+	
+	\item[]\hspace*{-.18in}\hskip-12pt{\em 2. Analyse:}
+	\item 
+	$SufficientConditions \gets $ the most general set of features of {\em PositiveExample} that satisfy {\em TargetConcept} according to $Explanation$.
+	\end{itemize}	
+	\item
+	Return $LearnedRules$
+	\end{itemize}
+\end{slide}
+
+	
+\begin{slide}{Learning from Perfect Domain Theories \textbf{ctd}}
+\tiny
+\begin{itemize}
+ \item 
+ \begin{itemize}
+	\item[]\hspace*{-.18in}\hskip-12pt{\em 3. Refine:}
+	\item
+	$LearnedRules \gets LearnedRules \ + \ NewHornClause$, where {\em
+	NewHornClause} is of the form
+	\[TargetConcept \gets  SufficientConditions \]
+	\end{itemize}	
+	\item
+	Return $LearnedRules$
+	\end{itemize}
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{An Explanation }
+\tiny
+	\begin{itemize}
+	 \item Give a proof, using the domain theory, that the (positive) training satisfies the target concept.
+	\item Referencing the scenario, the positive example of SafeToStack(o1,o2) can be explained by using the domain theory, as such:
+		\begin{enumerate}
+		\item Volume(o1,2) $\wedge$ Density(o1,0.3) $\wedge$ Equal(0.6, 2*0.3) $\rightarrow$ Weight(o1,0.6)
+		\item Type(o2,endtable) $\rightarrow$  Weight(o2,5)
+		\item Weight(o1, 0.6) $\wedge$ LessThan(0.6, 5) $\wedge$ Weight(o2,5) $\rightarrow$  Lighter(o1,o2)
+		\item Lighter(o1, o2) $\rightarrow$ SafeToStack(o1,o2) 
+		\end{enumerate}
+	\item In Prolog-EGB this explanation is generated using backward chaining search, as done by Prolog.
+	\item Like Prolog, it halts when it finds a proof
+	\end{itemize}
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{An Explanation }
+	\begin{figure}
+		\centering
+		\includegraphics[scale=0.35]{./../bookps/ebg-safetostack1.epsf}
+	\end{figure}
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{Computing Weakest Preimage of $SafeToStack(Obj1, Obj2)$  }
+	\begin{figure}
+		\centering
+		\includegraphics[scale=0.4]{./../bookps/ebg-safetostack3.epsf}
+	\end{figure}
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{Preimage $SafeToStack(Obj1, Obj2)$  }
+\tiny
+	\texttt{Regress}({\em Frontier, Rule, Literal, $\theta_{hi}$})
+	
+	\begin{itemize}
+	\item[] {\em Frontier:  literals to be regressed}
+	\item[] {\em Rule: A Horn clause}
+	\item[] {\em Literal: A literal in Frontier inferred by
+	Rule in the explanation}
+	\item[] $\theta_{hi}${\em : The substitution that unifies the head of Rule to the
+	corresponding literal in the explanation}
+	\end{itemize}
+ctd..
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{Preimage $SafeToStack(Obj1, Obj2)$  }
+\tiny
+	
+	\begin{itemize}
+	\item[] {\em Returns the set of literals forming the weakest preimage of
+	Frontier with respect to Rule}
+	
+	\begin{itemize}
+	\item $head \gets head$ of {\em Rule}
+	\item $body \gets body$ of {\em Rule}
+	\item $\theta_{hl} \gets$ the most general unifier of $head$ with {\em Literal} such
+	that there exists a substitution $\theta_{li}$ for which
+	\[ \theta_{li}(\theta_{hl}(head)) = \theta_{hi}(head) \]
+	\item Return $\theta_{hl} ( Frontier - head + body)$
+	\end{itemize}
+	\end{itemize}
+\end{slide}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{ Regressing Literals: An Example }
+\tiny 
+	\texttt{Regress}({\em Frontier, Rule, Literal, $\theta_{hi}$}) where
+	\begin{itemize}
+	\item[]{\em Frontier} $= \{ Volume(x,vs), Density(x,dx), Eq(wx,
+	times(vx,$$dx)),$ $LessThan($$wx,$$wy)$, $Weight(y,$$wy) \}$
+	\item[]{\em Rule} $= Weight(z,5) \gets Type(z,Endtable)$
+	\item[]{\em Literal} $= Weight(y,wy)$
+	\item[]$\theta_{hi} = \{z / Obj2 \}$
+	\begin{itemize}
+	\item $head \gets Weight(z,5)$
+	\item $body \gets  Type(z,Endtable)$
+	\item $\theta_{hl} \gets \{z / y, wy / 5 \}$, where $\theta_{li} = \{y / Obj2 \}$
+	\item Return $\{ Volume(x,vs), Density(x,dx), Eq(wx, times(vx,dx)),$ $LessThan(wx,5),$ $Type(y,Endtable) \}$
+	\end{itemize}
+	\end{itemize}
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{ Lessons from $SafeToStack$ Example }
+	
+	\begin{itemize}
+	\item Justified generalisation from single positive example
+	\item Explanation determines  attribute {\em relevance}
+	\item Regression determines sufficient constraints on attributes
+	\item Generality of output hypothesis depends on domain theory
+	\item Still requires multiple examples (covering algorithm)
+	\end{itemize}
+\end{slide}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{Inductive Bias of Prolog-EBG}
+	\begin{itemize}
+	\item Since all the candidate hypotheses are generated from B it follows that the inductive bias of Prolog-EBG is simply B, right?
+    	\item Almost. We also have to consider how it chooses from among the alternative clauses.
+    	\item Since it uses sequential covering by growing the Horn clauses we can say that it prefers small sets of Horn clauses.
+    	\item So, the inductive bias is B plus a preference for small sets of maximally general Horn clauses.
+    \item The inductive bias is largely determined by the input domain theory, not the algorithm.
+\end{itemize}
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{Perspectives on Prolog-EBG }
+	\begin{itemize}
+	\item Theory-guided generalisation from examples
+	\item Example-guided compilation of domain theory
+	\item ''Just'' restating what learner already ``knows''
+	\end{itemize}
+	
+	But is it learning?
+	\begin{itemize}
+	\item Are you learning when you improve at playing chess?
+		\begin{itemize} 
+		\item Even though optimal play follows from rules of game... 
+		\end{itemize}
+	\item Are you learning when you sit in math class?
+		\begin{itemize} \item Even though those theorems follow from the axioms you've already learned... \end{itemize}
+	\end{itemize}
+\end{slide}
+
+\end{document}
+
+
+
+

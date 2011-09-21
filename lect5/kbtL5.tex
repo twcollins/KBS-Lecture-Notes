@@ -1,0 +1,979 @@
+\documentclass[%
+pdf,
+%nocolorBG,
+colorBG,
+slideColor,
+tcrico,
+%slideBW,
+%draft,
+%frames
+%azure
+%contemporain
+%nuancegris
+%troispoints
+%lignesbleues
+%darkblue
+%alienglow
+%autumn
+%default
+%gyom
+%blends
+]{prosper}
+\usepackage{amsmath}
+%\usepackage[table]{xcolor}
+\usepackage{colortbl}
+\usepackage{graphicx}
+\usepackage{subfigure}
+\usepackage{algorithm2e}
+
+\begin{document}
+
+\begin{slide}{Knowledge Based Technologies}
+	\textbf{Lecture 5} 
+	\newline
+	\textbf{An Introduction to Bayesian Learning }
+
+	\small
+	John Moore \& Thomas Collins
+\end{slide}
+
+
+\begin{slide}{Bayesian Learning}
+	\begin{itemize}
+	\item Bayes Theorem
+	\item MAP, ML hypotheses
+	\item MAP learners
+	\item Minimum description length principle
+	\item Bayes optimal classifier
+	\item Naive Bayes learner
+	\item Bayesian belief networks
+	\item Expectation Maximization 
+	\end{itemize}
+\end{slide}
+
+
+\begin{slide}{Two Roles for Bayesian Methods}
+Provides practical learning algorithms:
+\begin{itemize}
+	\item Naive Bayes learning
+	\item Bayesian belief network learning
+	\item Combine prior knowledge (prior probabilities) with observed data
+	\item Requires prior probabilities
+\end{itemize}
+Provides useful conceptual framework
+\begin{itemize}
+	\item Provides ''gold standard'' for evaluating other learning algorithms
+	\item Additional insight into Occam's razor
+\end{itemize}
+\end{slide}
+
+
+\begin{slide}{Bayes Theorem}
+
+\[ P(h|D) = \frac{P(D|h) P(h)}{P(D)} \]
+
+\begin{itemize}
+\item $P(h)$ = prior probability of hypothesis $h$
+\item $P(D)$ = prior probability of training data $D$
+\item $P(h|D)$ = probability of $h$ given $D$
+\item $P(D|h)$ = probability of $D$ given $h$
+\end{itemize}
+\end{slide}
+
+
+\begin{slide}{ Choosing Hypotheses}
+\tiny 
+
+\[ P(h|D) = \frac{P(D|h) P(h)}{P(D)} \]
+Generally want the most probable hypothesis given the training data
+
+{\em Maximum a posteriori} hypothesis $h_{MAP}$:
+\begin{eqnarray}
+& h_{MAP} & = \arg \max_{h \in H} P(h|D)\nonumber \\
+& & = \arg \max_{h \in H} \frac{P(D|h) P(h)}{P(D)} \nonumber \\
+& & = \arg \max_{h \in H}P(D|h) P(h) \nonumber
+\end{eqnarray}
+
+
+
+If assume $P(h_{i})=P(h_{j})$ then can further simplify, and choose the 
+{\em Maximum likelihood} (ML) hypothesis
+
+
+\[h_{ML} = \arg \max_{h_{i} \in H} P(D|h_{i}) \]
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{ Bayes Theorem   }  
+
+Does patient have condition or not?
+\begin{quote}
+A patient takes a lab test and the result comes back positive.  The test
+returns a correct positive result in only $98\%$ of the cases in which a
+condition is actually present, and a correct negative result in only $97\%$ of
+the cases in which the condition is not present.  Furthermore, $.008$ of the
+entire population have this condition.
+\end{quote}
+
+\begin{eqnarray}
+& P(condition) = \ \ \ \ \ \ \ \ \ \  & P(\neg condition) =  \ \ \ \ \ \ \ \ \ \ \nonumber \\
+& P(+ | condition) =  \ \ \ \ \ \ \ \ \ \   & P(- | condition) =   \ \ \ \ \ \ \ \ \ \ \nonumber \\
+& P(+ | \neg condition) =   \ \ \ \ \ \ \ \ \ \  & P(- | \neg condition) =  \ \ \ \ \ \ \ \ \ \ \nonumber 
+\end{eqnarray}
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{ Basic Formulas for Probabilities   }  
+\begin{itemize}
+\item
+\textit{Product Rule}: probability $P(A \wedge B)$ of a conjunction of two events
+A and B:
+\[P(A \wedge B) = P(A|B) P(B) = P(B|A) P(A) \]
+
+\item
+{\em Sum Rule}: probability of a disjunction of two events A and B:
+\[P(A \vee B) = P(A) + P(B) - P(A \wedge B) \]
+
+\item
+{\em Theorem of total probability}: if events $A_{1}, \ldots, A_{n}$ are mutually exclusive with $\sum_{i = 1}^{n} P(A_{i}) = 1$, then
+\[P(B) = \sum_{i = 1}^{n} P(B|A_{i}) P(A_{i})\]
+\end{itemize}
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{ Brute Force MAP Hypothesis Learner   }
+\begin{enumerate}
+	\item For each hypothesis $h$ in $H$, calculate the posterior probability
+	\[ P(h|D) = \frac{P(D|h) P(h)}{P(D)}\]
+	\item Output the hypothesis $h_{MAP}$ with the highest posterior probability
+	\[h_{MAP} = \arg\max_{h \in H} P(h|D)\]
+\end{enumerate}
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{slide}{ Relation to Concept Learning}
+Consider our usual concept learning task
+\begin{itemize}
+	\item Instance space $X$, hypothesis space $H$, training examples $D$
+	\item Consider the \texttt{FindS} learning algorithm (outputs most specific hypothesis from the version space $VS_{H,D}$)
+\end{itemize}
+\bigskip
+What would Bayes rule produce as the MAP hypothesis?
+
+\bigskip
+Does $FindS$ output a MAP hypothesis?
+\end{slide}
+
+\begin{slide}{ Relation to Concept Learning   }  
+\tiny
+Assume fixed set of instances $\langle x_{1}, \ldots, x_{m}\rangle$
+Assume $D$ is the set of classifications $D = \langle c(x_{1}),
+\ldots, c(x_{m})\rangle$ 
+
+Choose $P(D|h)$
+\begin{itemize}
+\item $P(D|h)=1$ if $h$ consistent with $D$
+\item $P(D|h)=0$ otherwise
+\end{itemize}
+
+Choose $P(h)$ to be {\em uniform} distribution
+\begin{itemize}
+\item $P(h) = \frac{1}{|H|}$ for all $h$ in $H$
+\end{itemize}
+
+Then,
+\[ P(h|D) = \left\{ \begin{array}{cl}
+  \frac{1}{|VS_{H,D}|} & \mbox{if $h$ is consistent with $D$} \\
+\\
+  0  & \mbox{otherwise} 
+\end{array} \right.
+\]
+\end{slide}
+
+
+\begin{slide}{ Evolution of Posterior Probabilities   }  
+\begin{figure}
+	\centering
+	\includegraphics[scale=0.7]{./../bookps/bayes-vs.ps}
+\end{figure}
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{slide}{ Characterising Learning Algorithms}
+Comparison to Equivalent MAP Learners   
+\begin{figure}
+	\centering
+	\includegraphics[scale=0.5]{./../bookps/vs-map-equivalent.ps}
+\end{figure}
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{ Learning A Real Valued Function} 
+
+\begin{figure}
+	\centering
+	\includegraphics[scale=0.2]{./../bookps/bayes-linear.epsf}
+\end{figure}
+\tiny
+
+Consider any real-valued target function $f$
+
+Training examples $\langle x_{i}, d_{i} \rangle$, where $d_{i}$ is noisy
+training value
+\begin{itemize} \item $d_{i} = f(x_{i}) + e_{i}$ 
+\item $e_{i}$ is random variable (noise) drawn independently for each $x_{i}$ 
+according to some Gaussian distribution with mean=0
+\end{itemize}
+
+Then the maximum likelihood hypothesis $h_{ML}$ is the one that minimizes
+the sum of squared errors:
+
+\[ h_{ML} = \arg \min_{h \in H} \sum_{i=1}^{m} \left(d_{i} -
+h(x_{i})\right)^{2} \]
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{ Learning A Real Valued Function   }  
+\tiny 
+\begin{eqnarray}
+h_{ML} &= &\arg\max_{h \in H} p(D|h) \nonumber \\
+ &= &\arg\max_{h \in H} \prod_{i=1}^{m} p(d_{i}|h) \nonumber \\
+&= &\arg\max_{h \in H} \prod_{i=1}^{m} \frac{1}{\sqrt{2 \pi \sigma^{2}}}
+e^{-\frac{1}{2}(\frac{d_{i} - h(x_{i})}{\sigma})^{2}} \nonumber
+\end{eqnarray}
+Maximize natural log of this instead...
+\begin{eqnarray}
+h_{ML}  &= &\arg\max_{h \in H}
+\sum_{i=1}^{m} \ln \frac{1}{\sqrt{2 \pi \sigma^{2}}} -
+\frac{1}{2}\left(\frac{d_{i} - h(x_{i})}{\sigma}\right)^{2} \nonumber \\
+  &= &\arg\max_{h \in H} \sum_{i=1}^{m} -
+\frac{1}{2}\left(\frac{d_{i} - h(x_{i})}{\sigma}\right)^{2} \nonumber \\
+ &= &\arg\max_{h \in H} \sum_{i=1}^{m} - \left(d_{i} - h(x_{i})\right)^{2}
+ \nonumber \\
+ &= &\arg\min_{h \in H} \sum_{i=1}^{m} \left(d_{i} - h(x_{i})\right)^{2}  \nonumber
+\end{eqnarray}
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{ Learning to Predict Probabilities   }  
+\tiny 
+Consider predicting survival probability from patient data
+
+Training examples $\langle x_{i}, d_{i} \rangle$, where $d_{i}$ is 1 or 0
+
+Want to train neural network to output a {\em probability} given $x_i$ (not a 0 or 1)
+
+In this case can show:
+
+\[ h_{ML} = \arg\max_{h \in H} \sum_{i=1}^{m} d_{i} \ln h(x_{i}) + (1-d_{i})
+\ln (1 - h(x_{i})) \]
+
+Weight update rule for a sigmoid unit:
+\[ w_{jk} \leftarrow w_{jk} +  \Delta w_{jk}\]
+where
+\[ \Delta w_{jk} = \eta \sum_{i=1}^{m} (d_{i} - h(x_{i})) \  x_{ijk} \]
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{ Minimum Description Length Principle   }  
+\tiny 
+Occam's razor: prefer the shortest hypothesis
+
+MDL: prefer the hypothesis $h$ that minimizes
+\[h_{MDL} = \arg\min_{h \in H} L_{C_{1}}(h) + L_{C_{2}}(D|h) \]
+where $L_{C}(x)$ is the description length of $x$ under encoding $C$
+
+\rule{\textwidth}{.2mm}\vskip -3mm
+
+\vspace*{.15in}
+Example: $H$ =  decision trees, $D$ = training data labels
+\begin{itemize}
+\item $L_{C_{1}}(h)$ is \# bits to describe tree $h$
+\item $L_{C_{2}}(D|h)$ is \# bits to describe $D$ given $h$
+\begin{itemize}
+\item Note $L_{C_{2}}(D|h)=0$ if examples classified perfectly by $h$. Need
+only describe exceptions
+\end{itemize}
+\item Hence $h_{MDL}$ trades off tree size for training errors
+\end{itemize}
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{ Minimum Description Length Principle   }  
+\tiny
+\begin{eqnarray}
+h_{MAP} &= &\arg \max_{h \in H}P(D|h) P(h) \nonumber \\
+&= &\arg \max_{h \in H} \log_{2} P(D|h) + \log_{2} P(h)  \nonumber \\
+&= &\arg \min_{h \in H} - \log_{2} P(D|h) - \log_{2} P(h) 
+\end{eqnarray}
+
+Interesting fact from information theory:
+\begin{quote}
+The optimal (shortest expected coding length) code for an event with
+probability $p$ is $- \log_{2} p$ bits.
+\end{quote}
+
+So interpret (1):
+\begin{itemize}
+\item $- \log_{2} P(h)$ is length of $h$ under optimal code
+\item $- \log_{2} P(D|h)$ is length of $D$ given $h$ under optimal code
+\end{itemize}
+
+$\rightarrow$ prefer the hypothesis that minimizes
+\[ length(h) + length(misclassifications) \]
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{\normalsize Most Probable Classification of New Instances   }  
+\tiny
+So far we've sought the most probable {\em hypothesis} given the data $D$
+(i.e., $h_{MAP}$)
+
+Given new instance $x$, what is its most probable {\em classification}?
+\begin{itemize}
+% true or false? \item $h_{MAP}(x)$ called the {\em Naive Bayes} classification
+\item $h_{MAP}(x)$ is not the most probable classification!
+\end{itemize}
+Consider:
+\begin{itemize}
+\item Three possible hypotheses: 
+\begin{itemize} \item[] $P(h_{1}|D)=.4, \  P(h_{2}|D)=.3, \  P(h_{3}|D)=.3$ \end{itemize}
+\item Given new instance $x$, 
+\begin{itemize} \item[] $h_{1}(x)=+, \ h_{2}(x)=-, \ h_{3}(x)=-$ \end{itemize}
+\item What's most probable classification of $x$?
+\end{itemize}
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{ Bayes Optimal Classifier   }  
+\tiny
+{\bf Bayes optimal classification: }
+
+\[ \arg \max_{v_{j} \in V} \sum_{h_{i} \in H} P(v_{j}|h_{i}) P(h_{i}|D)\]
+
+Example:
+
+\begin{eqnarray}
+P(h_{1}|D)=.4, & P(-|h_{1})=0, & P(+|h_{1})=1 \nonumber \\
+P(h_{2}|D)=.3, & P(-|h_{2})=1, & P(+|h_{2})=0 \nonumber \\
+P(h_{3}|D)=.3, & P(-|h_{3})=1, & P(+|h_{3})=0 \nonumber 
+\end{eqnarray}
+therefore
+\begin{eqnarray}
+\sum_{h_{i} \in H} P(+|h_{i}) P(h_{i}|D) & = & .4 \nonumber \\
+\sum_{h_{i} \in H} P(-|h_{i}) P(h_{i}|D) & = & .6 \nonumber
+\end{eqnarray}
+and
+\begin{eqnarray}
+\arg \max_{v_{j} \in V} \sum_{h_{i} \in H} P(v_{j}|h_{i}) P(h_{i}|D) & = & -
+\nonumber 
+\end{eqnarray}
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{slide}{ Gibbs Classifier   }  
+\tiny
+Bayes optimal classifier provides best result, but can be expensive if many
+hypotheses.
+
+Gibbs algorithm:
+\begin{enumerate}
+\item Choose one hypothesis at random, according to $P(h|D)$
+\item Use this to classify new instance 
+\end{enumerate}
+
+Surprising fact: Assume target concepts are drawn at random from $H$ 
+according to priors on $H$.  Then:
+
+\[ E[error_{Gibbs}] \leq 2 E[error_{Bayes Optimal}] \]
+
+
+Suppose correct, uniform prior distribution over $H$, then 
+\begin{itemize}
+\item Pick any hypothesis from VS, with uniform probability
+\item Its expected error no worse than twice Bayes optimal
+\end{itemize}
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{ Naive Bayes Classifier   }  
+
+Along with decision trees, neural networks, nearest nbr, one of the most
+practical learning methods.
+
+When to use:
+\begin{itemize}
+\item Moderate or large training set available
+\item Attributes that describe instances are conditionally independent given
+classification 
+\end{itemize}
+
+Successful applications:
+\begin{itemize}
+\item Diagnosis
+\item Classifying text documents
+\end{itemize}
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{ Naive Bayes Classifier   }  
+\tiny
+Assume target function $f: X \to V$, where each instance $x$ described by
+attributes $\langle a_{1}, a_{2} \ldots a_{n} \rangle$.  
+
+Most probable value of $f(x)$ is:
+\begin{eqnarray}
+v_{MAP} &= &\arg\max_{v_{j} \in V} P(v_{j} | a_{1}, a_{2} \ldots a_{n})  \nonumber \\ 
+v_{MAP} &= &\arg\max_{v_{j} \in V} \frac{P(a_{1}, a_{2} \ldots a_{n}|v_{j})
+P(v_{j})}{P(a_{1}, a_{2} \ldots a_{n})} \nonumber \\ 
+&= &\arg\max_{v_{j} \in V} P(a_{1}, a_{2} \ldots a_{n}|v_{j}) P(v_{j}) \nonumber
+\end{eqnarray}
+
+Naive Bayes assumption:
+\[ P(a_{1}, a_{2} \ldots a_{n}|v_{j}) = \prod_{i} P(a_{i} | v_{j}) \]
+
+which gives 
+
+\[\mbox{\bf Naive Bayes classifier: } v_{NB} = \arg\max_{v_{j} \in V} P(v_{j})
+\prod_{i} P(a_{i} | v_{j}) \]
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{ Naive Bayes Algorithm   }  
+\tiny
+Naive\_Bayes\_Learn($examples$)
+\begin{itemize} 
+\item[]
+For each target value $v_j$
+\begin{itemize}
+\item[]
+$\hat{P}(v_j) \gets$ estimate $P(v_j)$
+\item[] For each attribute value $a_i$ of each attribute $a$
+\begin{itemize} \item[] $\hat{P}(a_i|v_j) \gets$ estimate $P(a_i|v_j)$ \end{itemize}
+\end{itemize}
+\end{itemize}
+
+\vspace*{.2in}
+Classify\_New\_Instance($x$)
+\[ v_{NB} = \arg\max_{v_{j} \in V} \hat{P}(v_{j}) \prod_{a_i \in x} \hat{P}(a_{i} | v_{j}) \]
+\end{slide}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+\begin{slide}{ Naive Bayes: Example   }  
+\tiny
+Consider {\em PlayTennis} again, and new instance 
+
+ \[\langle Outlk=sun, Temp=cool, Humid=high, Wind=strong \rangle \]
+
+Want to compute:
+\[ v_{NB} = \arg\max_{v_{j} \in V} P(v_{j}) \prod_{i} P(a_{i} | v_{j}) \]
+
+
+\[P(y)\ P(sun|y)\ P(cool|y)\ P(high|y)\ P(strong|y) = .005 \]
+\[P(n)\ P(sun|n)\ P(cool|n)\ P(high|n)\ P(strong|n) = .021 \]
+
+
+\[ \to v_{NB} = n \]
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{ Naive Bayes: Subtleties   }  
+\tiny
+
+\begin{enumerate}
+\item Conditional independence assumption is often violated
+\[ P(a_{1}, a_{2} \ldots a_{n}|v_{j}) = \prod_{i} P(a_{i} | v_{j}) \]
+
+\begin{itemize}
+\item ...but it works surprisingly well anyway.  Note don't need estimated posteriors $\hat{P}(v_j|x)$ to be correct; need only that 
+\end{itemize}
+\[\arg\max_{v_{j} \in V} \hat{P}(v_{j}) \prod_{i} \hat{P}(a_{i} | v_{j}) =
+\arg\max_{v_{j} \in V}  P(v_{j}) P(a_{1} \ldots, a_n | v_{j}) \]
+
+\begin{itemize}
+\item Naive Bayes posteriors often unrealistically close to 1 or 0
+\end{itemize}
+\end{enumerate}
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{slide}{ Naive Bayes: Subtleties   }  
+\tiny
+\begin{enumerate}
+\item[2.]
+what if none of the training instances with target value $v_j$ have attribute
+value $a_i$?  Then
+\[ \hat{P}(a_i|v_j) = 0 \mbox{, and...}\]
+\[ \hat{P}(v_{j}) \prod_{i} \hat{P}(a_{i} | v_{j}) = 0 \]
+\end{enumerate}
+
+Typical solution is Bayesian estimate for $\hat{P}(a_{i} | v_{j})$
+\[  \hat{P}(a_{i} | v_{j}) \gets \frac{n_{c} + mp}{n + m} \]
+where 
+\begin{itemize}
+\item
+$n$ is number of training examples for which $v=v_j$, 
+\item $n_c$ number of examples for which $v=v_j$ and $a=a_i$
+\item $p$ is prior estimate for $\hat{P}(a_{i} | v_{j})$
+\item $m$ is weight given to prior (i.e. number of ``virtual'' examples)
+\end{itemize}
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{Learning to Classify Text}
+Why?
+\begin{itemize}
+\item Learn which news articles are of interest
+\item Learn to classify web pages by topic
+\end{itemize}
+
+Naive Bayes is among most effective algorithms
+
+\bigskip
+What attributes shall we use to represent text documents??
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{Learning to Classify Text   }  
+\tiny
+Target concept $Interesting? : Document \to \{+,-\}$
+
+\begin{enumerate}
+\item Represent each document by vector of words
+\begin{itemize}
+\item one attribute per word position in document
+\end{itemize}
+\item Learning: Use training examples to estimate
+\begin{itemize}
+\item $P(+)$ , $P(-)$ , $P(doc|+)$, $P(doc|-)$
+\end{itemize}
+\end{enumerate}
+Naive Bayes conditional independence assumption
+
+\[ P(doc|v_j) = \prod_{i=1}^{length(doc)} P(a_i=w_k | v_j) \]
+
+where $P(a_i=w_k| v_j)$ is probability that word in position $i$ is $w_k$,
+given $v_j$
+
+One more assumption: $P(a_i=w_k|v_j) = P(a_m=w_k|v_j), \forall i,m$
+
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{Learning to Classify Text }  
+\tiny
+
+\texttt{Learn\_naive\_Bayes\_text}($Examples, V$)
+\begin{itemize}
+
+\item[]
+{\em 1. collect all words and other tokens that occur in $Examples$}
+
+\item $Vocabulary \gets$ all distinct words and other tokens in $Examples$
+
+\item[]
+{\em 2. calculate the required $P(v_{j})$ and $P(w_{k}|v_{j})$ probability
+terms}
+
+\item
+For each target value $v_{j}$ in $V$ do
+\begin{itemize}
+\item
+$docs_{j} \gets $ subset of $Examples$ for which the target value is $v_{j}$
+
+\item
+$P(v_{j}) \gets \frac{|docs_{j}|}{|Examples|}$
+
+\item
+$Text_{j} \gets $ a single document created by concatenating all members of $docs_{j}$
+
+\item
+$n \gets$ total number of words in $Text_{j}$ (counting duplicate words multiple
+times)
+
+\item
+for each word $w_{k}$ in $Vocabulary$
+\begin{itemize}
+\item
+$n_{k} \gets$ number of times word $w_{k}$ occurs in $Text_{j}$
+
+\item
+$P(w_{k}|v_{j}) \gets \frac{n_{k} + 1}{n + |Vocabulary|}$
+\end{itemize}
+\end{itemize}
+\end{itemize}
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{Learning to Classify Text }  
+
+\texttt{Classify\_naive\_Bayes\_text}($Doc$)
+
+\begin{itemize}
+\item $positions \gets$ all word positions in $Doc$ that contain tokens found in
+$Vocabulary$
+
+\item  Return $v_{NB}$, where
+\[v_{NB} = \arg\max_{v_{j} \in V} P(v_{j}) \prod_{i \in positions}P(a_{i}|v_{j}) \]
+\end{itemize}
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{Bayesian Belief Networks   }  
+
+Interesting because:
+\begin{itemize}
+\item Naive Bayes assumption of conditional independence too restrictive
+\item But it's intractable without some such assumptions...
+\item Bayesian Belief networks describe conditional independence among {\em
+subsets} of variables
+\item[$\to$] allows combining prior knowledge about (in)dependencies among
+variables with observed training data
+\end{itemize}
+\bigskip
+(also called Bayes Nets)
+\end{slide}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{Conditional Independence   }  
+\tiny
+\begin{quote}
+{\bf Definition:} $X$ is {\em conditionally independent} of $Y$ given $Z$ if
+the probability distribution governing $X$ is independent of the value of $Y$
+given the value of $Z$; that is, if
+\[  (\forall x_i,y_j,z_k) \ P(X = x_i | Y = y_j, Z = z_k) =   P(X = x_i | Z
+= z_k) \]
+more compactly, we write
+\[  P(X | Y,Z) = P(X | Z) \]
+\end{quote}
+
+Example: $Thunder$ is conditionally independent of $Rain$, given $Lightning$
+\[  P(Thunder | Rain, Lightning) = P(Thunder | Lightning) \]
+
+Naive Bayes uses cond. independent. to justify
+\begin{eqnarray}
+P(X,Y|Z) &= &P(X|Y,Z) P(Y|Z)  \nonumber \\
+ &= &P(X|Z) P(Y|Z)  \nonumber
+\end{eqnarray}
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{Bayesian Belief Network   }  
+\tiny
+\begin{figure}
+	\centering
+	\includegraphics[scale=0.5]{./../bookps/bayesnet.ps}
+\end{figure}
+
+Network represents a set of conditional independence assertions:
+
+\begin{itemize}
+\item Each node is asserted to be conditionally independent of its non descendants, given its
+immediate predecessors.
+\item Directed acyclic graph
+\end{itemize}
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{Bayesian Belief Network   }  
+
+\begin{figure}
+	\centering
+	\includegraphics[scale=0.5]{./../bookps/bayesnet.ps}
+\end{figure} 
+\tiny
+Represents joint probability distribution over all variables
+\begin{itemize}
+\item e.g., $P(Storm, BusTourGroup, \ldots, ForestFire)$
+\item in general, 
+\[P(y_1, \ldots, y_n) = \prod_{i=1}^{n} P(y_i | Parents(Y_i)) \]
+where $Parents(Y_i)$ denotes immediate predecessors of $Y_i$ in graph
+\end{itemize}
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{Bayesian Belief Network   }  
+\begin{figure}
+	\centering
+	\includegraphics[scale=0.5]{./../bookps/bayesnet.ps}
+\end{figure} 
+\tiny
+\begin{itemize}
+\item so, joint distribution is fully defined by graph, plus the $P(y_i | Parents(Y_i))$
+\end{itemize}
+\end{slide}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{Inference in Bayesian Networks   }  
+\tiny
+How can one infer the (probabilities of) values of one or more network variables, given observed values of others?
+
+\begin{itemize}
+	\item Bayes net contains all information needed for this inference
+	\item If only one variable with unknown value, easy to infer it
+	\item In general case, problem is NP hard
+\end{itemize}
+
+In practice,  can succeed in many cases
+\begin{itemize}
+	\item Exact inference methods work well for some network structures
+	\item Monte Carlo methods ''simulate'' the network randomly to calculate approximate solutions
+\end{itemize}
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{Learning of Bayesian Networks   }  
+
+Several variants of this learning task
+
+\begin{itemize}
+\item 
+Network structure might be {\em known} or {\em unknown}
+\item 
+Training examples might provide values of {\em all} network variables, or just
+{\em some}
+\end{itemize}
+
+If structure known and observe all variables
+\begin{itemize} \item Then it's easy as training a Naive Bayes classifier \end{itemize}
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{Learning Bayes Nets   }  
+
+Suppose structure known, variables partially observable
+
+e.g., observe {\em ForestFire, Storm, BusTourGroup, Thunder}, but not {\em
+Lightning, Campfire}...
+
+\begin{itemize}
+\item Similar to training neural network with hidden units
+\item In fact, can learn network conditional probability tables using gradient
+ascent! 
+\item Converge to network $h$ that (locally) maximizes $P(D|h)$
+\end{itemize}
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{Gradient Ascent for Bayes Nets   }  
+\tiny
+Let $w_{ijk}$ denote one entry in the conditional probability table for
+variable $Y_i$ in the network
+\[ w_{ijk} = P(Y_i=y_{ij} | Parents(Y_i) = \mbox{the list $u_{ik}$ of values)} \]
+e.g., if $Y_i = Campfire$, then $u_{ik}$ might be $\langle Storm=T, BusTourGroup=F \rangle$
+ 
+Perform gradient ascent by repeatedly
+\begin{enumerate}
+\item update all $w_{ijk}$ using training data $D$
+\[w_{ijk} \gets w_{ijk} + \eta \sum_{d \in D} \frac{P_h(y_{ij}, u_{ik} |
+d)}{w_{ijk}} \]
+\item then, renormalize the $w_{ijk}$ to assure
+\begin{itemize}
+\item $\sum_{j} w_{ijk} = 1$
+\item $0 \leq w_{ijk} \leq 1$
+\end{itemize}
+\end{enumerate}
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{More on Learning Bayes Nets   }  
+
+EM algorithm can also be used. Repeatedly:
+\begin{enumerate}
+\item Calculate probabilities of unobserved variables, assuming $h$
+\item Calculate new $w_{ijk}$ to maximize $E[\ln P(D|h)]$ where $D$ now includes
+both observed and (calculated probabilities of) unobserved variables
+\end{enumerate}
+
+When structure unknown...
+\begin{itemize}
+\item Algorithms use greedy search to add/substract edges and nodes
+\item Active research topic
+\end{itemize}
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{Summary: Bayesian Belief Networks   }  
+
+\begin{itemize}
+\item Combine prior knowledge with observed data
+\item Impact of prior knowledge (when correct!) is to lower the sample complexity
+\item Active research area
+\begin{itemize}
+\item Extend from boolean to real-valued variables
+\item Parametrised distributions instead of tables
+\item Extend to first-order instead of propositional systems
+\item More effective inference methods
+\end{itemize}
+\end{itemize}
+\end{slide}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{General  EM Problem   }  
+\tiny
+Given:
+\begin{itemize}
+\item Observed data $X=\{x_1, \ldots, x_m\}$
+\item Unobserved data $Z=\{z_1, \dots, z_m\}$
+\item Parametrised probability distribution $P(Y|h)$, where
+\begin{itemize} 
+\item $Y=\{y_1, \dots, y_m\}$ is the
+full data $y_i = x_i \bigcup z_i$
+\item $h$ are the parameters
+\end{itemize}
+\end{itemize}
+
+Determine:
+\begin{itemize}
+\item $h$ that (locally) maximizes $E[\ln P(Y|h)]$
+\end{itemize}
+\vspace*{.2in}
+Many uses:
+\begin{itemize}
+\item Train Bayesian belief networks
+\item Unsupervised clustering (e.g., $k$ means)
+\item Hidden Markov Models
+\end{itemize}
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{slide}{EM Algorithm   }  
+
+Converges to local maximum likelihood $h$ and provides estimates of hidden variables $z_{ij}$
+
+In fact, local maximum in $E[\ln P(Y|h)]$
+
+\begin{itemize} 
+\item $Y$ is complete (observable plus unobservable variables) data 
+\item Expected value is taken over possible values of unobserved variables in $Y$ 
+\end{itemize}
+\end{slide}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{General EM Method   }  
+\tiny 
+Define likelihood function $Q(h' | h)$ which calculates $Y = X \bigcup Z$ using
+observed $X$ and current parameters $h$ to estimate $Z$
+
+\[ Q(h' | h) \gets E[ \ln P(Y | h') | h, X ] \]
+
+EM Algorithm:
+
+\begin{itemize}
+\item[]
+{\em Estimation (E) step:} Calculate $Q(h'|h)$ using the current hypothesis
+$h$ and the observed data $X$ to estimate the probability distribution over
+$Y$.
+\[ Q(h' | h) \gets E[ \ln P(Y | h') | h, X ] \]
+
+\item[]
+{\em Maximization (M) step:} Replace hypothesis $h$ by the hypothesis $h'$
+that maximizes this $Q$ function.
+\[ h \gets \arg\max_{h'}  Q(h' | h) \]
+\end{itemize}
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{slide}{Resources}
+At this stage we have encountered a number of learning techniques. There are a number of existing frameworks which support these and many more such techniques. Some open source examples include:
+	\begin{itemize}
+	\item Weka (Waikato Environment for Knowledge Analysis)
+		\begin{itemize}
+		\item Developed at the University of Waikato, New Zealand
+		\item Machine Learning Workbench
+		\item http://www.cs.waikato.ac.nz/~ml/index.html
+		\end{itemize}
+	\end{itemize}
+\end{slide}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{Resources}
+	\begin{itemize}
+	\item GATE (General Architecture for Text Engineering )
+		\begin{itemize}
+		\item Developed at the University of Sheffield
+		\item Natural Language Processing Toolkit
+		\item http://gate.ac.uk/
+		\end{itemize}
+	\item UIMA (Unstructured Information Management applications)
+		\begin{itemize}
+		\item Apache foundation incubator project
+		\item Community orientated project attempting to develop a set of frameworks, tools etc for knowledge management. 
+		\item http://incubator.apache.org/uima/
+		\end{itemize}
+	\end{itemize}
+\end{slide}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{Summary}
+	\begin{itemize}
+	\item Bayes Theorem
+	\item MAP, ML hypotheses
+	\item MAP learners
+	\item Minimum description length principle
+	\item Bayes optimal classifier
+	\item Naive Bayes learner
+	\item Bayesian belief networks
+	\item Expectation Maximization 
+	\end{itemize}
+\end{slide}
+
+
+
+\end{document}
+
+
+
+

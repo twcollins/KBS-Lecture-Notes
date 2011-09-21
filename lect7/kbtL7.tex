@@ -1,0 +1,398 @@
+\documentclass[%
+pdf,
+%nocolorBG,
+colorBG,
+slideColor,
+tcrico,
+%slideBW,
+%draft,
+%frames
+%azure
+%contemporain
+%nuancegris
+%troispoints
+%lignesbleues
+%darkblue
+%alienglow
+%autumn
+%default
+%gyom
+%blends
+]{prosper}
+\usepackage{amsmath}
+%\usepackage[table]{xcolor}
+\usepackage{colortbl}
+\usepackage{graphicx}
+\usepackage{subfigure}
+\usepackage{algorithm2e}
+
+\begin{document}
+
+\begin{slide}{Knowledge Based Technologies}
+	\textbf{Lecture 7} 
+	\newline
+	\textbf{An Introduction to Instance Based Learning}
+
+	\small
+	John Moore \& Thomas Collins
+\end{slide}
+
+\begin{slide}{Instance Based Learning}
+\begin{itemize}
+\item Instance-based learning is a name for a family of learning algorithms
+\item AKA memory-based learning
+\item Constructs hypotheses directly from training instances
+\item Therefore the hypothesis complexity can grow with the data
+\end{itemize}
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{Instance Based Learning}
+Some example algorithms:
+\begin{itemize}
+\item $k$-Nearest Neighbour
+\item Locally weighted regression
+\item Radial basis functions
+\item Case-based reasoning
+\item Lazy and eager learning
+\end{itemize}
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{Instance-Based Learning }
+\begin{itemize}
+ \item  Key idea: just store all training examples $\langle x_i, f(x_i) \rangle$
+\item  Nearest neighbour:
+	\begin{itemize}
+	\item
+	Given query instance $x_q$, first locate nearest training example $x_n$, then
+	estimate $\hat{f}(x_q) \leftarrow f(x_n)$
+	\end{itemize}
+\item $k$-Nearest neighbour:
+	\begin{itemize}
+	\item Given $x_q$, take vote among its $k$ nearest neighbours (if discrete-valued
+	target function)
+	\item Take mean of $f$ values of $k$ nearest neighbours (if real-valued)
+	\[ \hat{f}(x_{q}) \leftarrow  \frac{\sum_{i=1}^{k}f(x_{i})}{k} \]
+	\end{itemize}
+\end{itemize}
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{When To Consider Nearest Neighbour }
+\tiny
+\begin{itemize}
+\item Instances map to points in $\Re^n$
+\item Less than 20 attributes per instance
+\item Lots of training data
+\end{itemize}
+
+Advantages:
+\begin{itemize}
+\item Training is very fast
+\item Learn complex target functions
+\item Don't lose information
+\end{itemize}
+
+Disadvantages:
+\begin{itemize}
+\item Slow at query time
+\item Easily fooled by irrelevant attributes
+\end{itemize}
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{Voronoi Diagram }
+\texttt{A decomposition of a metric space determined by distances to a specified discrete set of objects in the space.}
+\begin{figure}
+	\centering
+	\includegraphics[scale=0.7]{./../bookps/knn-f1.ps}
+\end{figure}
+
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{Behaviour in the Limit }
+\tiny
+\begin{itemize}
+ \item Consider $p(x)$ defines probability that instance $x$ will be labelled 1 (positive) versus 0 (negative).
+\item  Nearest neighbour: 
+	\begin{itemize} 
+	\item As number of training examples $\rightarrow \infty$,
+	approaches Gibbs Algorithm
+	\item[] Gibbs: with probability $p(x)$ predict 1, else 0
+	\end{itemize}
+\item  $k$-Nearest neighbour: 
+	\begin{itemize} 
+	\item As number of training examples $\rightarrow \infty$ and $k$ gets large, approaches Bayes optimal
+	\item[] Bayes optimal: if $p(x)>.5$ then predict 1, else 0
+	\end{itemize}
+\item  Note Gibbs has at most twice the expected error of Bayes optimal
+\end{itemize}
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{Distance-Weighted $k$NN }
+\tiny
+\begin{itemize}
+ \item  Might want weight nearer neighbours more heavily  
+\[ \hat{f}(x_{q}) \leftarrow  \frac{\sum_{i=1}^{k} w_{i} f(x_{i})}{\sum_{i=1}^{k} w_{i}} \]
+where
+\[ w_{i} \equiv \frac{1}{d(x_{q}, x_{i})^{2}} \]
+and $d(x_{q}, x_{i})$ is distance between $x_{q}$ and $x_{i}$
+\item  Note now it makes sense to use {\em all} training examples instead of just $k$
+\begin{itemize} \item[$\rightarrow$]Shepard's method \end{itemize}
+\end{itemize}
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{Curse of Dimensionality }
+
+\begin{itemize}
+ \item  Imagine instances described by 20 attributes, but only 2 are relevant to target function
+\item  \texttt{Curse of dimensionality:} nearest neighbour is easily mislead when high-dimensional $X$
+\item One approach:
+	\begin{itemize}
+	\item Stretch $j$th axis by weight $z_j$, where $z_1, \ldots, z_n$
+	chosen to minimize prediction error
+	\item Use cross-validation to automatically choose weights $z_1, \ldots, z_n$
+	\item Note setting $z_j$ to zero eliminates this dimension altogether
+	\end{itemize}
+	\end{itemize}
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{Locally Weighted Regression }
+\tiny
+\begin{itemize}
+ \item  Note $k$NN forms local approximation to $f$ for each query point $x_q$
+\item Why not form an explicit approximation $\hat{f}(x)$ for region surrounding $x_q$
+	\begin{itemize}
+	\item Fit linear function to $k$ nearest neighbours
+	\item Fit quadratic, ...
+	\item Produces ``piecewise approximation'' to $f$
+	\end{itemize}
+\item  Several choices of error to minimize:
+	\begin{itemize}
+	\item Squared error over $k$ nearest neighbours
+	\[E_{1}(x_q) \equiv \frac{1}{2} \sum_{x \in\ k\ nearest\ nbrs\ of\ x_q} (f(x)
+	- \hat{f}(x))^2 \]
+	
+	\item Distance-weighted squared error over all neighbours
+	\[E_{2}(x_q) \equiv \frac{1}{2} \sum_{x \in D} (f(x) - \hat{f}(x))^2\
+	K(d(x_{q}, x)) \]
+	\item $\ldots$
+	\end{itemize}
+\end{itemize}
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{Radial Basis Function Networks }
+
+\begin{itemize}
+\item Global approximation to target function, in terms of linear combination
+of local approximations
+
+\item  Used, e.g., for image classification
+
+\item A different kind of neural network
+
+\item Closely related to distance-weighted regression, but ''eager'' instead of ''lazy''
+\end{itemize}
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{slide}{Radial Basis Function Networks }
+\tiny
+\begin{figure}
+	\centering
+	\includegraphics[scale=0.6]{./../bookps/rbf2.ps}
+\end{figure}
+
+where $a_i(x)$ are the attributes describing instance $x$, and
+\[ f(x) =  w_0 + \sum_{u=1}^{k} w_u K_u(d(x_u,x))  \]
+
+One common choice for $K_u(d(x_u,x))$ is
+\[ K_u(d(x_u,x)) = e^{- \frac{1}{2 \sigma_u^2}d^2(x_u,x)} \]
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{Training Radial Basis Function Networks }
+\begin{itemize}
+ \item Q1: What $x_u$ to use for each kernel function $K_u(d(x_u,x))$?
+	\begin{itemize}
+	\item Scatter uniformly throughout instance space 
+	\item Or use training instances (reflects instance distribution) 
+	\end{itemize}
+\item  Q2: How to train weights (assume here Gaussian $K_u$)?
+	\begin{itemize}
+	\item First choose variance (and perhaps mean) for each $K_u$
+	\begin{itemize} \item e.g., use EM \end{itemize}
+	\item Then hold $K_u$ fixed, and train linear output layer
+	\begin{itemize} \item efficient methods to fit linear function \end{itemize}
+	\end{itemize}
+\end{itemize}
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{Case-Based Reasoning }
+\tiny
+\begin{itemize}
+ \item  Can apply instance-based learning even when $X \neq \Re^n$
+\begin{itemize} \item[$\rightarrow$] need different ''distance'' metric \end{itemize}
+\item Case-Based Reasoning is instance-based learning applied to instances with symbolic logic descriptions
+\end{itemize}
+\begin{verbatim}
+((user-complaint error53-on-shutdown)
+ (operating-system Windows)
+ (network-connection PCIA)
+ (memory 3Gb)
+ (installed-applications Excel Firefox)
+ (disk 1gig)
+ (likely-cause ???))
+\end{verbatim}
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{Illustrative System: CADET }
+
+
+\begin{itemize}
+ \item CADET: \textbf{Ca}se-based \textbf{De}sign \textbf{T}ool.
+ \item Engineering synthesis tool developed at C.M.U in the early 90's
+	\begin{itemize}
+	 \item Interactive system 
+	\item Left the adaptation and evaluation tasks to the designer. 
+	\item Provided a mechanical engineer with access to designs of simple mechanical devices, where each design case contained a causal model of the design. 
+	\item The goal was to enable the designer to do model-based adaptation of the past design.
+	\end{itemize}
+\end{itemize}
+\end{slide}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{Case-Based Reasoning in CADET }
+
+CADET: 75 stored examples of mechanical devices
+
+\begin{itemize}
+\item each training example: $\langle$ qualitative function, mechanical structure$\rangle$
+\item new query: desired function, 
+\item target value: mechanical structure for this function
+\end{itemize}
+
+Distance metric: match qualitative function descriptions
+\end{slide}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{Case-Based Reasoning in CADET }
+\begin{figure}
+	\centering
+	\includegraphics[scale=0.6]{./../bookps/cbr.ps}
+\end{figure}
+
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{Case-Based Reasoning in CADET }
+\tiny
+\begin{itemize}
+\item Instances represented by rich structural descriptions
+\item Multiple cases retrieved (and combined) to form solution to new problem
+\item Tight coupling between case retrieval and problem solving
+\end{itemize}
+
+Bottom line: 
+
+\begin{itemize} 
+\item Simple matching of cases useful for tasks such as answering help-desk queries 
+\item For Example:
+	\begin{itemize}
+	\item \texttt{SMART}: Support management automated reasoning technology for Compaq customer service
+	\end{itemize}
+\end{itemize}
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{Lazy and Eager Learning }
+\begin{itemize}
+ \item  Lazy: wait for query before generalizing
+	\begin{itemize} \item {$k$-Nearest Neighbour}, Case based reasoning \end{itemize}
+	\bigskip
+	Eager: generalize before seeing query
+	\begin{itemize} \item Radial basis function networks,  ID3, Backpropagation, NaiveBayes, $\ldots$ \end{itemize}
+\item  Does it matter?
+	\begin{itemize}
+	\item Eager learner must create global approximation
+	\item Lazy learner can create many local approximations
+	\item if they use same $H$, lazy can represent more complex functions (e.g.,
+	consider $H$ = linear functions)
+	\end{itemize}
+\end{itemize}
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+\begin{slide}{Resources}
+Some Open Source frameworks:
+	\begin{itemize}
+	\item jCOLIBRI (Java Based CBR Framework)
+		\begin{itemize}		
+		\item http://gaia.fdi.ucm.es/projects/jcolibri/
+		\end{itemize}
+	\item FreeCBR
+		\begin{itemize}
+		\item Another Java based framework
+		\item http://freecbr.sourceforge.net/
+		\end{itemize}
+	\end{itemize}
+\end{slide}
+
+
+\begin{slide}{Resources}
+	\begin{itemize}
+	\item jCOLIBRI (Java Based CBR Framework)
+		\begin{itemize}		
+		\item http://gaia.fdi.ucm.es/projects/jcolibri/
+		\end{itemize}
+\item Selection Engine
+		\begin{itemize}
+		\item Minimal CBR engine originally developed within the context of a student project.
+		\item Good resource if you're interested in exploring a CBR implementation which is not overly complex.
+		\item http://selectionengine.sourceforge.net/
+			\begin{itemize}
+			\item \textbf{Note:} Written in Java of a roughly 2000 vintage
+			\item 
+		\end{itemize}
+	\end{itemize}
+
+	\end{itemize}
+\end{slide}
+
+
+\end{document}
+
+
+
+

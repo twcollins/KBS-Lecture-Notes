@@ -1,0 +1,454 @@
+
+
+
+\documentclass[%
+pdf,
+%nocolorBG,
+colorBG,
+slideColor,
+tcrico,
+%slideBW,
+%draft,
+%frames
+%azure
+%contemporain
+%nuancegris
+%troispoints
+%lignesbleues
+%darkblue
+%alienglow
+%autumn
+%default
+%gyom
+%blends
+]{prosper}
+\usepackage{amsmath}
+%\usepackage[table]{xcolor}
+\usepackage{colortbl}
+\usepackage{graphicx}
+\usepackage{subfigure}
+\usepackage{algorithm2e}
+
+\begin{document}
+
+
+\begin{slide}{Knowledge Based Technologies}
+	\textbf{Lecture 10} 
+	\newline
+	\textbf{Reinforcement Learning}
+
+	\small
+	John Moore \& Thomas Collins
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{slide}{Overview} 
+
+\begin{itemize}
+\item Control learning
+\item Control policies that choose optimal actions
+\item $Q$ learning
+\item Convergence
+\end{itemize}
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{slide}{Learning} 
+\begin{itemize}
+\item Learning takes place as a result of interaction between an agent and the world
+\item In general the idea behind learning is that agent perceptions should be used not only for acting, but also for improving the agent's ability to behave optimally in the future to achieve the goal.
+\end{itemize}
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{slide}{Recap: General Learning Types} 
+\begin{itemize}
+\item Supervised learning:
+  \begin{itemize}
+   \item A situation in which sample (input, output) pairs of the function to be learned can be perceived or are given e.g. You can think it as if there is a teacher present.
+  \end{itemize}
+\item Unsupervised learning
+  \begin{itemize}
+   \item The challenge is to seek to determine how the data is organised, meaning that we can subsequently make use of this knowledge. 
+  \item It is distinguished from supervised learning in that the learner is given only unlabelled examples.
+  \end{itemize}
+\item Reinforcement Learning
+\end{itemize}
+\end{slide}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{slide}{Recap: Learning Types} 
+\begin{itemize}
+\item Reinforcement learning
+  \begin{itemize}
+   \item Learn how to behave successfully to achieve a goal while interacting with an external environment. 
+    \item Learn via experiences!
+  \end{itemize}
+\item Some examples
+  \begin{itemize}
+   \item Game playing: player knows whether it win or lose, but not know how to move at each step.
+  \item Control: a traffic system can measure the delay of cars, but not know how to decrease it.
+  \end{itemize}
+\end{itemize}
+\end{slide}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{slide}{Control Learning } 
+\tiny
+Consider learning to choose actions, e.g.,
+
+\begin{itemize}
+\item Robot learning to dock on battery charger
+\item Learning to choose actions to optimize factory output
+\item Learning to play Backgammon
+\end{itemize}
+
+Note several problem characteristics:
+\begin{itemize}
+\item Delayed reward
+\item Opportunity for active exploration
+\item Possibility that state only partially observable
+\item Possible need to learn multiple tasks with same sensors/effectors
+\end{itemize}
+\end{slide}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{One Example: TD-Gammon } 
+
+\centerline{[Tesauro, 1995]}
+
+\begin{itemize}
+ \item Classic RL problem/example
+ \item Learn to play Backgammon
+ \item Immediate reward
+  \begin{itemize}
+  \item +100 if win
+  \item -100 if lose
+  \item 0 for all other states
+  \end{itemize}
+\item Trained by playing 1.5 million games against itself
+\item Now approximately equal to best human player
+\end{itemize}
+\end{slide}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{\large Reinforcement Learning Problem } 
+
+	\begin{figure}
+		\centering
+		\includegraphics[scale=0.6]{./../bookps/fig13-1.ps}
+	\end{figure}
+
+\end{slide}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+\begin{slide}{Markov Decision Processes } 
+\tiny
+Assume
+\begin{itemize}
+\item  finite set of states $S$
+\item  set of actions $A$
+\item at each discrete time agent observes state $s_t \in S$ and chooses
+action $a_t \in A$
+\item then receives immediate reward $r_t$
+\item and state changes to $s_{t+1}$
+\item Markov assumption:  $s_{t+1} = \delta(s_t, a_t)$ and  $r_t = r(s_t,
+a_t)$ 
+\begin{itemize}
+\item i.e., $r_t$ and $s_{t+1}$ depend only on {\em current} state and action
+\item functions $\delta$ and $r$ may be nondeterministic
+\item functions $\delta$ and $r$ not necessarily known to agent
+\end{itemize}
+\end{itemize}
+\end{slide}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+\begin{slide}{Agent's Learning Task } 
+
+\begin{itemize}
+ \item  Execute actions in environment, observe results, and
+  \begin{itemize}
+  \item learn action policy $\pi : S \rightarrow A$ that maximizes
+  \[ E[r_t + \gamma r_{t+1} + \gamma^2 r_{t+2} + \ldots ] \]
+  from any starting state in $S$
+  \item here $0 \leq \gamma < 1$ is the discount factor for future rewards
+  \end{itemize}
+\item  Note something new:
+  \begin{itemize}
+  \item Target function is $\pi : S \rightarrow A$
+  \item but we have no training examples of form $\langle s, a \rangle$
+  \item training examples are of form $\langle \langle  s, a \rangle , r \rangle$
+  \end{itemize}
+\end{itemize}
+\end{slide}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{slide}{Value Function } 
+
+\begin{itemize}
+ \item  First, consider deterministic worlds \dots
+
+\begin{itemize}
+ \item For each possible policy $\pi$ the agent might adopt, we can define an evaluation function over states
+  \begin{eqnarray}
+  & V^{\pi}(s) & \equiv r_{t} + \gamma r_{t+1} + \gamma^{2} r_{t+2} + ...
+  \nonumber \\ 
+  & & \equiv \sum_{i=0}^{\infty} \gamma^{i} r_{t+i} \nonumber
+  \end{eqnarray}
+where $ r_{t}, r_{t+1}, \ldots$ are generated by following policy $\pi$ starting at state $s$
+  \end{itemize}
+  \item  Restated, the task is to learn the optimal policy $\pi^{*}$
+\[  \pi^{*} \equiv \arg\max_{\pi} V^{\pi}(s), (\forall s) \]
+\end{itemize}
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{slide}{Value Function } 
+
+\begin{figure}
+	\centering
+	\subfigure[$r(s,a)$ (immediate reward) values]{
+	  \includegraphics[scale=0.6]{./../bookps/rl-grid-r.ps}
+	}
+	\subfigure[$Q(s,a)$ values]{
+	  \includegraphics[scale=0.6]{./../bookps/rl-grid-q.ps}
+	}
+	\subfigure[$V^{*}(s)$ values]{
+	  \includegraphics[scale=0.6]{./../bookps/rl-grid-v.ps}
+	}
+	\subfigure[One optimal policy]{
+	  \includegraphics[scale=0.6]{./../bookps/rl-grid-policy.ps}
+	}
+\end{figure}
+
+
+
+%\centerline{A simple deterministic world to illustrate the basic concepts 
+% of $Q$-learning.
+
+\end{slide}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+\begin{slide}{What to Learn } 
+
+
+\begin{itemize}
+\item We might try to have agent learn the evaluation function $V^{\pi^{*}}$ (which we write as $V^*$)
+
+\item  It could then do a lookahead search to choose best action from any state $s$ because
+\[ \pi^{*}(s) = \arg\max_{a} [r(s,a) + \gamma V^{*}(\delta(s,a))] \]
+
+\item A problem:
+\begin{itemize}
+\item This works well if agent knows $\delta: S \times A \rightarrow$, and $r : S
+\times A \rightarrow \Re$
+\item But when it doesn't, it can't choose actions this way
+\end{itemize}
+\end{itemize}
+\end{slide}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{slide}{$Q$ Function } 
+
+Define new function very similar to $V^*$
+
+\[ Q(s,a) \equiv r(s,a) + \gamma V^{*}(\delta(s,a)) \]
+
+If agent learns $Q$, it can choose optimal action even without knowing
+$\delta$!
+
+\[ \pi^{*}(s) = \arg\max_{a} [r(s,a) + \gamma V^{*}(\delta(s,a))] \]
+
+\[ \pi^{*}(s) = \arg\max_{a} Q(s,a) \]
+
+$Q$ is the evaluation function the agent will learn
+\end{slide}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{slide}{Training Rule to Learn $Q$ } 
+
+Note $Q$ and $V^*$ closely related:
+\[  V^{*}(s) = \max_{a'}Q(s,a') \]
+
+Which allows us to write $Q$ recursively as
+
+\begin{eqnarray}
+Q(s_t,a_t) &= &  r(s_t,a_t) + \gamma V^{*}(\delta(s_t,a_t))) \nonumber \\
+ &= &  r(s_t,a_t) + \gamma \max_{a'}Q(s_{t+1},a') \nonumber
+\end{eqnarray}
+
+Nice!  Let $\hat{Q}$ denote learner's current approximation to $Q$.  Consider
+training rule
+
+\[ \hat{Q}(s,a) \leftarrow r + \gamma \max_{a'}\hat{Q}(s',a') \]
+\noindent
+where $s'$ is the state resulting from applying action $a$ in state $s$
+\end{slide}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{slide}{$Q$ Learning for Deterministic Worlds } 
+
+
+\begin{algorithm}[H]
+ For each $s, a$ initialize table entry $\hat{Q}(s,a) \leftarrow 0$ \;
+ Observe current state $s$ \;
+\Repeat{forever}{
+  Select an action $a$ and execute it \;
+  Receive immediate reward $r$ \;
+  Observe the new state $s'$ \;
+  Update the table entry for $\hat{Q}(s,a)$ as follows:
+  \begin{displaymath}
+    \hat{Q}(s,a) \leftarrow r + \gamma \max_{a'}\hat{Q}(s',a') 
+  \end{displaymath} 
+  $s \leftarrow s'$ \;
+  }
+\end{algorithm}
+
+\end{slide}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{slide}{Updating $\hat{Q}$ } 
+	\begin{figure}
+		\centering
+		\includegraphics[scale=0.8]{./../bookps/rl-grid-trace.ps}
+	\end{figure}
+\end{slide}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{slide}{Updating $\hat{Q}$ } 
+  \begin{eqnarray}
+\hat{Q}(s_1,a_{right}) & \leftarrow & r + \gamma \max_{a'}\hat{Q}(s_2,a') \nonumber \\
+ & \leftarrow & 0 + 0.9 \ \max \{63, 81, 100 \} \nonumber \\ & \leftarrow & 90
+ \nonumber
+\end{eqnarray}
+Notice if rewards non-negative, then
+\[(\forall s,a,n)\ \ \hat{Q}_{n+1}(s,a) \geq \hat{Q}_{n}(s,a) \]
+and 
+\[(\forall s,a,n)\ \  0 \leq \hat{Q}_n(s,a) \leq Q(s,a) \]
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{slide}{Nondeterministic Case } 
+
+\begin{itemize}
+ \item What if reward and next state are non-deterministic?
+\item  We redefine $V, Q$ by taking expected values
+ \begin{eqnarray}
+ & V^{\pi}(s) & \equiv E[ r_{t} + \gamma r_{t+1} + \gamma^{2} r_{t+2} + \ldots ]
+\nonumber \\ 
+& & \equiv E [ \sum_{i=0}^{\infty} \gamma^{i} r_{t+i} ] \nonumber
+\end{eqnarray}
+
+\[ Q(s,a) \equiv E[r(s,a) + \gamma V^{*}(\delta(s,a)) ] \]
+\end{itemize}
+\end{slide}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{slide}{Nondeterministic Case } 
+\begin{itemize}
+ \item  $Q$ learning generalizes to nondeterministic worlds
+\item  Alter training rule to
+\[ \hat{Q}_{n}(s,a)  \leftarrow  (1-\alpha_{n})\hat{Q}_{n-1}(s,a) + \alpha_{n}[r
++ \max_{a'}\hat{Q}_{n-1}(s',a')] \]
+where
+\[ \alpha_{n} = \frac{1}{1 + visits_n(s,a)} \]
+\item  It can still be proven convergence of $\hat{Q}$ to $Q$ [Watkins and Dayan, 1992]
+\end{itemize}
+\end{slide}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{slide}{Temporal Difference Learning } 
+
+\begin{itemize}
+ \item  $Q$ learning: reduce discrepancy between successive $Q$ estimates
+\item One step time difference:
+\[ Q^{(1)}(s_t,a_t) \equiv r_t + \gamma \max_{a} \hat{Q}(s_{t+1},a) \]
+\item  Why not two steps?
+\[ Q^{(2)}(s_t,a_t) \equiv r_t + \gamma r_{t+1} + \gamma^2 \max_{a}
+\hat{Q}(s_{t+2},a) \]
+\end{itemize}
+\end{slide}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{Temporal Difference Learning } 
+
+\begin{itemize}
+\item  Or $n$?
+\[ Q^{(n)}(s_t,a_t) \equiv r_t + \gamma r_{t+1} + \cdots
++ \gamma^{(n-1)}r_{t+n-1} + \gamma^n \max_{a}\hat{Q}(s_{t+n},a) \]
+\item  Blend all of these:
+\[Q^{\lambda}(s_{t},a_{t})  \equiv (1- \lambda) \left[
+Q^{(1)}(s_t,a_t) + \lambda Q^{(2)}(s_t,a_t) + \lambda^2 Q^{(3)}(s_t,a_t) +
+\cdots \right] \]
+\end{itemize}
+\end{slide}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{Temporal Difference Learning } 
+\tiny
+\[Q^{\lambda}(s_{t},a_{t})  \equiv (1- \lambda) \left[
+Q^{(1)}(s_t,a_t) + \lambda Q^{(2)}(s_t,a_t) + \lambda^2 Q^{(3)}(s_t,a_t) +
+\cdots \right] \]
+
+Equivalent expression:
+\begin{eqnarray*}
+ Q^{\lambda}(s_{t},a_{t}) & = r_{t} + \gamma [ & (1 -
+\lambda)
+\max_{a}\hat{Q}(s_{t},a_{t}) \\
+ & & + \lambda \ Q^{\lambda}(s_{t+1},a_{t+1})]
+\end{eqnarray*}
+
+
+TD($\lambda$) algorithm uses above training rule
+\begin{itemize}
+\item Sometimes converges faster than $Q$ learning
+\item converges for learning $V^*$ for any $0 \leq
+\lambda \leq 1$ (Dayan, 1992)
+\item Tesauro's TD-Gammon uses this algorithm
+\end{itemize}
+\end{slide}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{Subtleties and Ongoing Research } 
+
+\begin{itemize}
+\item
+Replace $\hat{Q}$ table with neural net or other generalizer
+\item
+Handle case where state only partially observable
+\item
+Design optimal exploration strategies
+\item
+Extend to continuous action, state
+\item
+Learn and use $\hat{\delta}: S \times A \rightarrow S$
+\item 
+Relationship to dynamic programming
+\end{itemize}
+\end{slide}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+\end{document}
+
+
+
+

@@ -1,0 +1,506 @@
+\documentclass[%
+pdf,
+%nocolorBG,
+colorBG,
+slideColor,
+tcrico,
+%slideBW,
+%draft,
+%frames
+%azure
+%contemporain
+%nuancegris
+%troispoints
+%lignesbleues
+%darkblue
+%alienglow
+%autumn
+%default
+%gyom
+%blends
+]{prosper}
+\usepackage{amsmath}
+%\usepackage[table]{xcolor}
+\usepackage{colortbl}
+\usepackage{graphicx}
+\usepackage{subfigure}
+\usepackage{algorithm2e}
+
+\begin{document}
+
+\begin{slide}{Knowledge Based Technologies}
+	\textbf{Lecture 6} 
+	\newline
+	\textbf{An Introduction to Genetic Algorithms}
+
+	\small
+	John Moore \& Thomas Collins
+\end{slide}
+
+
+\begin{slide}{Genetic Algorithms: Synopsis}
+	\begin{itemize}
+	\item Premise
+		\begin{itemize}
+		\item Evolution worked once (it produced us!), it might work again
+		\end{itemize}
+	\item Basics
+		\begin{itemize}
+		\item Pool of solutions
+	`	\item  Mate existing solutions to produce new solutions
+		\item Mutate current solutions for long-term diversity
+		\item Cull population
+		\end{itemize}
+	\end{itemize}
+\end{slide}
+
+
+\begin{slide}{Originator}
+\tiny
+\begin{itemize}
+\item Developed: USA in the 1970's
+\item Early names: J. Holland, K. DeJong, D. Goldberg
+\item Typically applied to:
+\begin{itemize}
+\item Discrete optimization
+\end{itemize}
+\item Attributed features:
+\begin{itemize}
+\item Considered somewhat slow to converge on a solution
+\item Good heuristic for combinatorial problems
+\end{itemize}
+\item Special Features:
+\begin{itemize}
+\item Traditionally emphasizes combining information from good parents (crossover)
+\item Many variants, e.g., reproduction models, operators
+\end{itemize}
+\end{itemize}
+\end{slide}
+
+
+\begin{slide}{Overview}
+\begin{itemize}
+\item Computing pioneers (especially in AI) looked to natural systems as guiding metaphors.
+\item Evolutionary computation
+\begin{itemize}
+\item Any biologically-motivated computing activity simulating natural evolution
+\end{itemize}
+\item Genetic Algorithms are one form of this activity
+\item Original goals
+\begin{itemize}
+\item Formal study of the phenomenon of adaptation - John Holland
+\item An optimization tool for engineering problems
+\end{itemize}
+\end{itemize}
+\end{slide}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{ Biological Evolution}  
+\begin{itemize} 
+\item Lamarck and others:
+\begin{itemize} 
+	\item Species ''transmute'' over time 
+\end{itemize}
+\item Darwin and Wallace:
+\begin{itemize} \item Consistent, heritable variation among individuals in population
+\item Natural selection of the fittest
+\end{itemize}
+\item Mendel and genetics:
+\begin{itemize} \item A mechanism for inheriting traits
+\item genotype $\rightarrow$ phenotype mapping
+\end{itemize}
+\end{itemize}
+
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{slide}{Why Evolution?}
+\begin{itemize}
+\item Ability to efficiently guide a search through a large solution space
+\item Ability to adapt solutions to changing environments
+\item ''Emergent'' behavior is the goal
+\end{itemize}
+\begin{quote}
+\texttt{''The hoped-for emergent behavior is the design of high-quality solutions to difficult problems and the ability to adapt these solutions in the face of a changing environment'' 
+}\end{quote}
+Melanie Mitchell, An Introduction to Genetic Algorithms
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{ Approach}  
+\begin{itemize}
+\item Take a population of candidate solutions to a given problem
+\item Use operators inspired by the mechanisms of natural genetic variation
+\item Apply selective pressure toward certain properties
+\item Evolve a more fit solution 
+\end{itemize}
+
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{ Terminology  }  
+\tiny
+\begin{itemize}
+\item Abstractions imported from biology
+	\begin{itemize}
+	\item Chromosomes, Genes, Alleles
+	\item Fitness, Selection
+	\item Crossover, Mutation
+	\end{itemize}
+\item GA terminology in the spirit - but not the letter - of  biology
+\begin{itemize}
+\item GA chromosomes are strings of genes
+\item Each gene has a number of alleles; i.e., settings
+\item Each chromosome is an encoding of a solution to a problem
+\item A population of such chromosomes is operated on by a GA
+\end{itemize}
+\end{itemize}
+
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{ Domain Encoding }
+\begin{itemize}
+\item A data structure for representing candidate solutions
+\item Often takes the form of a bit string 
+\item Usually has internal structure; i.e., different parts of the string represent different aspects of the solution)
+\end{itemize}
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{ Domain Encoding }
+\tiny 
+\begin{itemize}
+\item Represent \[ (Outlook = Overcast \vee Rain) \wedge (Wind = Strong) \] by
+\begin{center}
+\begin{tabular}{cc}
+$Outlook$ & $Wind$ \\
+011 & 10
+\end{tabular}
+\end{center}
+\item Represent
+\[\mbox{IF\ \ } Wind = Strong \mbox{\ \ \ THEN\ \ } PlayTennis=yes \]
+by
+\begin{center}
+\begin{tabular}{ccc}
+$Outlook$ & $Wind$ & $PlayTennis$ \\
+111 & 10 & 10 \\
+\end{tabular}
+\end{center}
+\end{itemize}
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{slide}{ Crossover}
+\begin{itemize}
+\item Mimics biological recombination
+\item Some portion of genetic material is swapped between chromosomes
+\item Typically the swapping produces an offspring
+\item Mechanism for the dissemination of ''building blocks'' (schemas)
+\end{itemize}
+\end{slide}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{ Mutation}  
+\begin{itemize}
+\item Selects a random locus - gene location - with some probability and alters the allele at that locus
+\item The intuitive mechanism for the preservation of variety in the population
+\end{itemize}
+
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{ Fitness}
+\begin{itemize}
+\item A measure of the goodness of the organism
+\item Expressed as the probability that the organism will live another cycle (generation)
+\item Basis for the natural selection simulation
+\begin{itemize}
+\item Organisms are selected to mate with probabilities proportional to their fitness
+\end{itemize}
+\item Probabilistically better solutions have a better chance of conferring their building blocks to the next generation (cycle)
+\end{itemize}
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{slide}{  Operators } 
+\begin{figure}
+	\centering
+	\includegraphics[scale=0.4]{./../bookps/ga-recomb.epsf}
+\end{figure}
+\end{slide}
+
+
+\begin{slide}{ A Simple GA}
+
+\begin{algorithm}[H]
+Generate initial population \;
+\While{not converged}
+{
+	Calculate the fitness of each member \;
+		// simulate another generation \;
+		\While{new population is not full}
+		{
+			Select parents from current population \;
+			Perform crossover add offspring to the new population \;
+		}
+	Merge new population into the current population \;
+	Mutate current population \;
+}
+\end{algorithm}
+
+
+
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{How do GAs work} 
+\tiny
+\begin{itemize}
+\item The structure of a GA is relatively simple to comprehend, but the dynamic behavior is complex
+\item Holland has done significant work on the theoretical foundations of GAs
+\begin{quote}
+\texttt{''GAs work by discovering, emphasizing, and recombining good ''building blocks'' of solutions in a highly parallel fashion.''
+}\end{quote}
+Melanie Mitchell, paraphrasing John Holland
+
+\item  Using formalism
+\begin{itemize}
+\item Notion of a building block is formalized as a schema
+\item Schemas are propagated or destroyed according to the laws of probability 
+\end{itemize}
+\end{itemize}
+
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{ Schema}
+\begin{itemize}
+\item A template, much like a regular expression, describing a set of strings
+\item The set of strings represented by a given schema characterizes a set of candidate solutions sharing a property
+\item This property is the encoded equivalent of a building block
+\end{itemize}
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{ Example }  
+\begin{itemize}
+\item \texttt{0} or \texttt{1} represents a fixed bit
+\item  Asterisk represents a ''don't care''
+\item  \texttt{11****00} is the set of all solutions encoded in 8 bits, beginning with two ones and ending with two zeros
+\item Solutions in this set all share the same variants of the properties encoded at these loci
+\end{itemize}
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{ Schema qualifiers}  
+\begin{itemize}
+\item Length
+\begin{itemize}
+	\item The inclusive distance between the two bits in a schema which are furthest apart (the defining length of the previous example is 8)
+\end{itemize}
+\item Order
+\begin{itemize}
+\item The number of fixed bits in a schema (the order of the previous example is 4) 
+\end{itemize}
+\end{itemize}
+
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{ Not just sum of the parts }  
+\begin{itemize}
+\item GAs explicitly evaluate and operate on whole solutions
+\item GAs implicitly evaluate and operate on building blocks
+\begin{itemize}
+	\item Existing schemas may be destroyed or weakened by crossover
+	\item New schemas may be spliced together from existing schema
+\end{itemize}
+\item Crossover includes no notion of a schema - only of the chromosomes
+\end{itemize}
+
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{Why do they work}
+\begin{itemize}
+ \item Schemas can be destroyed or conserved
+\item So how are good schemas propagated through generations?
+\begin{itemize}
+	\item Conserved - good - schemas confer higher fitness on the offspring inheriting them
+	\item Fitter offspring are probabilistically more likely to be chosen to reproduce 
+\end{itemize}
+\end{itemize}
+
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{ Approximating schema dynamics}  
+\tiny
+\begin{itemize}
+ \item Let $H$ be a schema with at least one instance present in the population at time $t$
+\item Let $m(H, t)$ be the number of instances of $H$ at time $t$
+\item Let $x$ be an instance of $H$ and $f(x)$ be its fitness
+\item The expected number of offspring of $x$ is $\frac{f(x)}{f(pop)}$ (by fitness proportionate selection)
+\item To know  $E(m(H, t +1))$ (the expected number of instances of schema H at the next time unit), sum $f(x)/f(pop)$ for all x in $H$
+\item GA never explicitly calculates the average fitness of a schema, but schema proliferation depends on its value
+\end{itemize}
+
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{slide}{ Schema Theorm }  
+\tiny
+\[E[m(s,t+1)] \geq \frac{\hat{u}(s,t)}{\bar{f}(t)}m(s,t) \left(1 -
+p_{c}\frac{d(s)}{l-1}\right) (1 - p_{m})^{o(s)} \]
+
+\begin{itemize}
+\item $m(s,t) =$ instances of schema $s$ in pop at time $t$
+\item $\bar{f}(t) =$ average fitness of pop. at time $t$
+\item $\hat{u}(s,t) =$ ave. fitness of instances of $s$ at time $t$
+\item $p_c =$ probability of single point crossover operator
+\item $p_m = $ probability of mutation operator
+\item $l = $ length of single bit strings
+\item $o(s)$ number of defined (non ``*'') bits in $s$
+\item $d(s) = $ distance between leftmost, rightmost defined bits in $s$
+\end{itemize}
+\end{slide}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{slide}{ Approximating schema dynamics }  
+\begin{itemize}
+ \item Approximation can be refined by taking into account the operators
+\begin{itemize}
+\item Schemas of long defining length are less likely to survive crossover
+\item Offspring are less likely to be instances of such schemas
+\end{itemize}
+\item Schemas of higher order are less likely to survive mutation
+\item Effects can be used to bound the approximat
+
+\end{itemize}
+
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{slide}{ Implications }  
+\begin{itemize}
+ \item Instances of short, low-order schemas whose average fitness tends to stay above the mean will increase exponentially
+\item Changing the semantics of the operators can change the selective pressures toward different types of schemas
+\end{itemize}
+
+\end{slide}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{slide}{ See Also }
+\tiny
+\begin{itemize}
+ \item Genetic algorithms are a particular class of evolutionary algorithms (EA).
+\item Evolutionary algorithms are a subset of evolutionary computation (EC), an indepth exposition of the field is outside the scope of this setting however related fields include:
+\begin{itemize}
+\item Genetic programming
+	\begin{itemize}
+	\item Specialization of genetic algorithms (GA) where each individual is a computer program.  
+ 	\item Evolve computer programs that perform a user-defined task.
+	\end{itemize}
+ \item Grammatical evolution 
+\begin{itemize}
+	\item Related to GP
+\item Addresses the ''combinatorial explosion'' problem.  
+	\end{itemize}
+
+\end{itemize}
+
+\end{itemize}
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{Resources}
+Some GA frameworks:
+	\begin{itemize}
+	\item ECJ19 
+		\begin{itemize}
+		\item Java based EC library
+		\item http://cs.gmu.edu/~eclab/projects/ecj/
+		\end{itemize}
+	
+	\item JGAP (Java Genetic Algorithms Package)
+		\begin{itemize}
+		\item http://jgap.sourceforge.net/
+		\end{itemize}
+	
+	\end{itemize}
+\end{slide}
+
+
+
+
+\begin{slide}{Resources}
+Some GA frameworks:
+	\begin{itemize}
+	
+	\item AI4R (Artificial Intelligence for Ruby)
+		\begin{itemize}
+		\item A collection of ruby algorithms implementations, covering several Artificial intelligence fields
+		\item Includes a GA component
+		\item http://ai4r.rubyforge.org/
+		\end{itemize}
+\item EO
+		\begin{itemize}
+		\item C++ based EC library
+		\item http://cs.gmu.edu/~eclab/projects/ecj/
+		\end{itemize}
+	\end{itemize}
+\end{slide}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{slide}{Summary}
+
+
+\begin{itemize}
+ 
+\item Conduct randomized, parallel, hill-climbing search through $H$
+\item Approach learning as optimization problem (optimize fitness)
+\item Nice feature: evaluation of Fitness can be very indirect
+	\begin{itemize}
+	\item Consider learning rule set for multistep decision making
+\end{itemize}
+ \item No issue of assigning credit/blame to indiv. steps
+\end{itemize}
+\end{slide}
+
+
+
+\end{document}
+
+
+
+

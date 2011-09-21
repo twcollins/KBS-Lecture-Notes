@@ -1,0 +1,566 @@
+\documentclass[%
+pdf,
+%nocolorBG,
+colorBG,
+slideColor,
+tcrico,
+%slideBW,
+%draft,
+%frames
+%azure
+%contemporain
+%nuancegris
+%troispoints
+%lignesbleues
+%darkblue
+%alienglow
+%autumn
+%default
+%gyom
+%blends
+]{prosper}
+\usepackage{amsmath}
+%\usepackage[table]{xcolor}
+\usepackage{colortbl}
+\usepackage{graphicx}
+\usepackage{subfigure}
+\usepackage{algorithm2e}
+
+\begin{document}
+
+\begin{slide}{Knowledge Based Technologies}
+ 
+\textbf{Lecture 4} 
+\newline
+\textbf{Artificial Neural Networks }
+
+\small
+John Moore \& Thomas Collins
+
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{slide}{Lecture Overview}
+\begin{itemize}
+\item Threshold units
+\item Gradient descent
+\item Multilayer networks
+\item Backpropagation
+\item Overfitting 
+\item Alternate ANN Forms
+\item Sample Usages
+\end{itemize}
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{slide}{Connectionist Models} 
+\tiny
+\begin{itemize}
+\item Consider humans:
+	\begin{itemize}
+	\item Neuron switching time \~\ $.001$ second
+	\item Number of neurons \~\ $10^{10}$
+	\item Connections per neuron \~\ $10^{4-5}$
+	\item Scene recognition time \~\ $.1$ second
+	\item 100 inference steps doesn't seem like enough
+	\item[$\rightarrow$] much parallel computation
+	\end{itemize}
+\item Properties of artificial neural nets (ANN's):
+	\begin{itemize}
+	\item Many neuron-like threshold switching units
+	\item Many weighted interconnections among units
+	\item Highly parallel, distributed process
+	\item Emphasis on tuning weights automatically
+	\end{itemize}
+\end{itemize}
+\end{slide}
+
+\begin{slide}{When to Consider Neural Networks  } 
+	\begin{itemize}
+	\item Input is high-dimensional discrete or real-valued (e.g. raw sensor input)
+	\item Output is discrete or real valued
+	\item Output is a vector of values
+	\item Possibly noisy data
+	\item Form of target function is unknown 
+	\item Human readability of result is unimportant
+	\end{itemize}
+\end{slide}
+
+\begin{slide}{Illustrative Usage} 
+ALVINN - capable of motorway driving 
+\begin{figure}
+	\centering
+	\subfigure[Interior View]{
+	\includegraphics[scale=0.3]{./../bookps/nl5-interior-front-color.ps}
+	}
+	\subfigure[High Level Architecture]{
+	\includegraphics[scale=0.15]{./../bookps/alvinn1.ps}
+	}
+	\subfigure[Input Image]{
+	\includegraphics[scale=0.2]{./../bookps/alvinn2.ps}
+	}
+\end{figure}
+\end{slide}
+
+
+
+\begin{slide}{  Perceptron  } 
+\begin{figure}
+	\centering
+	\includegraphics[scale=0.5]{./../bookps/ann-perceptron.epsf}
+\end{figure}
+
+\tiny
+
+\[o(x_{1}, \ldots, x_{n}) = \left\{ \begin{array}{rl}
+     1 & \mbox{if $w_{0} + w_{1}x_1 + \cdots + w_n x_n > 0$}\\
+     -1 & \mbox{otherwise.}  
+\end{array}
+\right. \]
+
+Sometimes we'll use simpler vector notation:
+
+\[o(\vec{x}) = \left\{ \begin{array}{rl}
+     1 & \mbox{if $\vec{w} \cdot \vec{x} > 0$}\\
+     -1 & \mbox{otherwise.}  
+\end{array}
+\right. \]
+\end{slide}
+
+
+\begin{slide}{  Decision Surface of a Perceptron  } 
+\begin{figure}
+	\centering
+	\includegraphics[scale=0.6]{./../bookps/ann-linearly-separable.epsf}
+\end{figure}
+
+\tiny
+\begin{itemize}
+ \item  Represents some useful functions
+	\begin{itemize} \item What weights represent $g(x_{1},x_{2}) = AND(x_{1},x_{2})$? \end{itemize}
+\item But some functions not representable
+	\begin{itemize} \item e.g., not linearly separable 
+	\item Therefore, we'll want networks of these \dots
+	\end{itemize}
+\end{itemize}
+\end{slide}
+
+
+
+\begin{slide}{  Perceptron training rule  } 
+
+\[w_i \leftarrow w_i + \Delta w_i \]
+where
+\[ \Delta w_{i} = \eta (t - o) x_{i} \]
+
+Where:
+\begin{itemize}
+\item $t=c(\vec{x})$ is target value
+\item $o$ is perceptron output
+\item $\eta$ is small constant (e.g., .1) called {\em learning rate}
+\end{itemize}
+\end{slide}
+
+
+\begin{slide}{  Perceptron training rule  } 
+\begin{itemize}
+\item Can prove it will converge
+	\begin{itemize}
+	\item If training data is linearly separable
+	\item and $\eta$ sufficiently small
+	\end{itemize}
+\end{itemize}
+\end{slide}
+
+\begin{slide}{  Gradient Descent  } 
+To understand, consider simpler {\em linear unit}, where
+\[ o = w_{0} + w_{1}x_1 + \cdots + w_n x_n \]
+
+Let's learn $w_{i}$'s that minimize the squared error
+
+\[ E[\vec{w}] \equiv  \frac{1}{2}\sum_{d \in D}(t_{d} - o_{d})^{2} \]
+
+Where $D$ is set of training examples
+\end{slide}
+
+
+
+\begin{slide}{  Gradient Descent  } 
+\begin{figure}
+	\centering
+	\includegraphics[scale=0.2]{./../bookps/parabola-floor.eps}
+\end{figure}
+\tiny
+Gradient
+\[ \nabla E[\vec{w}] \equiv \left[\frac{\partial E}{\partial w_{0}},
+\frac{\partial E}{\partial w_{1}}, \cdots \frac{\partial E}{\partial
+w_{n}}\right] \]
+Training rule:
+\[\Delta \vec{w} = -\eta \nabla E[\vec{w}] \]
+i.e.,
+\[\Delta w_{i} = -\eta  \frac{\partial E}{\partial w_{i}}\]
+\end{slide}
+
+
+\begin{slide}{ Gradient Descent  } 
+\tiny
+ \begin{quote}
+ Each training example is a pair of the form $\langle \vec{x}, t \rangle$, where $\vec{x}$ is the vector of input values, and $t$ is the target output value.  $\eta$ is the learning rate (e.g., .05)
+\end{quote}
+
+\begin{algorithm}[H]
+\KwIn{$training\_examples, \eta$} 
+Initialize each $w_{i}$ to some small random value \;
+\While{Until the termination condition is met}
+{
+	Initialize each $\Delta w_{i}$ to zero \;
+	\ForEach{For each $\langle \vec{x},t \rangle$ in $training\_examples$}
+	{
+	Input the instance $\vec{x}$ to the unit and compute the output $o$ \;
+	\ForEach{For each linear unit weight $w_{i}$}
+	{
+		\[ \Delta w_{i} \leftarrow \Delta w_{i} + \eta (t - o) x_{i}  \] 
+	}
+	}
+	\ForEach{For each linear unit weight $w_{i}$}
+	{
+		\[w_{i} \leftarrow w_{i} + \Delta w_{i}\] 
+	}
+}
+\end{algorithm}
+\end{slide} 
+
+
+\begin{slide}{ Summary } 
+\begin{itemize}
+ \item Perceptron training rule guaranteed to succeed if
+	\begin{itemize}
+	\item Training examples are linearly separable
+	\item Sufficiently small learning rate $\eta$
+	\end{itemize}
+\item  Linear unit training rule uses gradient descent
+	\begin{itemize}
+	\item Guaranteed to converge to hypothesis with minimum squared error
+	\item Given sufficiently small learning rate $\eta$
+	\item Even when training data contains noise
+	\item Even when training data not separable by $H$
+	\end{itemize}
+\end{itemize}
+\end{slide}
+
+
+\begin{slide}{ Incremental (Stochastic) Gradient Descent  } 
+\tiny 
+\begin{algorithm}[H]
+/* Batch mode Gradient Descent */ \;
+\KwIn{$training\_examples, \eta$}
+\While{Not satisfied}
+{
+	Compute the gradient $\nabla E_{D}[\vec{w}]$ \;
+	$\vec{w} \leftarrow \vec{w} -\eta \nabla E_{D}[\vec{w}] $ \;
+}
+\end{algorithm}
+
+\tiny
+\begin{algorithm}[H]
+/* Incremental mode Gradient Descent */ \;
+\KwIn{$training\_examples, \eta$}
+\While{Not satisfied}
+{
+	\ForEach{Training example $d$ in $D$}
+	{
+	 Compute the gradient $\nabla E_{d}[\vec{w}]$ \;
+	$\vec{w} \leftarrow \vec{w} -\eta \nabla E_{d}[\vec{w}] $ \;
+	}
+}
+\end{algorithm}
+
+{\em Incremental Gradient Descent} can approximate {\em Batch Gradient
+Descent} arbitrarily closely if $\eta$ made small enough
+\end{slide}
+
+\begin{slide}{  Multilayer Networks of Sigmoid Units  } 
+\begin{figure}
+	\centering
+	\includegraphics[scale=0.8]{./../bookps/ann-lippmann.ps}
+\end{figure}
+\end{slide}
+
+
+\begin{slide}{  Sigmoid Unit  } 
+\begin{figure}
+	\centering
+	\includegraphics[scale=0.4]{./../bookps/ann-sigmoid.epsf}
+\end{figure}
+\tiny
+$\sigma(x)$ is the sigmoid function 
+\[ \frac{1}{1 + e^{-x}} \]
+
+Nice property: $\frac{d \sigma(x)}{dx} = \sigma(x) (1 - \sigma(x))$
+
+We can derive gradient decent rules to train
+\begin{itemize}
+\item One sigmoid unit
+\item {\em Multilayer networks} of sigmoid units $\rightarrow$ Backpropagation
+\end{itemize}
+\end{slide}
+
+
+\begin{slide}{  Backpropagation Algorithm  } 
+\tiny
+\begin{algorithm}[H]
+\KwIn{Initialize all weights to small random numbers}
+\While{Not satisfied}
+{
+	\ForEach{Training example $d$ in $D$}
+	{
+	Input the training example to the network and compute the network outputs
+	\ForEach{Each output unit $k$}
+	{
+		\[ \delta_{k} \leftarrow o_{k}(1-o_{k})(t_{k}-o_{k}) \]
+	}
+	\ForEach{For each hidden unit $h$}
+	{
+		\[ \delta_{h} \leftarrow o_{h}(1-o_{h})\sum_{k \in outputs}w_{h,k}\delta_{k} \]
+	}
+	Update each network weight $w_{i,j}$ \;
+	\[w_{i,j} \leftarrow w_{i,j} + \Delta w_{i,j} \]
+	where
+	\[ \Delta w_{i,j} = \eta \delta_{j} x_{i,j} \]
+	}
+}
+\end{algorithm}
+\end{slide}
+
+
+\begin{slide}{  More on Backpropagation  } 
+\tiny
+\begin{itemize}
+\item Gradient descent over entire {\em network} weight vector
+\item Easily generalized to arbitrary directed graphs
+\item Will find a local, not necessarily global error minimum
+	\begin{itemize} \item In practice, often works well (can run multiple times) \end{itemize}
+\item Often include weight {\em momentum} $\alpha$
+\[ \Delta w_{i,j}(n) = \eta \delta_{j} x_{i,j} + \alpha \Delta w_{i,j}(n-1) \]
+\item Minimizes error over {\em training} examples
+	\begin{itemize} \item Will it generalize well to subsequent examples? \end{itemize}
+\item Training can take thousands of iterations $\rightarrow$ slow!
+\item Using network after training is very fast
+\end{itemize}
+\end{slide}
+
+
+\begin{slide}{  Learning Hidden Layer Representations  } 
+\begin{figure}
+	\centering
+	\includegraphics[scale=0.6]{./../bookps/ann-838.epsf}
+\end{figure}
+
+A target function:
+
+\end{slide}
+
+
+\begin{slide}{  Learning Hidden Layer Representations  } 
+Can this be learned?
+\tiny
+\begin{center}
+ {
+\begin{tabular}{lcr} \hline
+\rowcolor[HTML]{99aabb} Input & & Output \\ \hline \hline
+\rowcolor[HTML]{bbccdd} 10000000 & $\rightarrow$ & 10000000 \\
+\rowcolor[HTML]{ccddee} 01000000 & $\rightarrow$ & 01000000 \\
+\rowcolor[HTML]{bbccdd} 00100000 & $\rightarrow$ & 00100000 \\
+\rowcolor[HTML]{ccddee} 00010000 & $\rightarrow$ & 00010000 \\
+\rowcolor[HTML]{bbccdd} 00001000 & $\rightarrow$ & 00001000 \\
+\rowcolor[HTML]{ccddee} 00000100 & $\rightarrow$ & 00000100 \\
+\rowcolor[HTML]{bbccdd} 00000010 & $\rightarrow$ & 00000010 \\
+\rowcolor[HTML]{ccddee} 00000001 & $\rightarrow$ & 00000001 \\ 
+\end{tabular}
+}
+\end{center}
+\end{slide}
+
+
+\begin{slide}{  Learning Hidden Layer Representations  } 
+A network:
+\begin{figure}
+	\centering
+	\includegraphics[scale=0.6]{./../bookps/ann-838.epsf}
+\end{figure}
+\end{slide}
+
+
+\begin{slide}{  Learning Hidden Layer Representations  } 
+\tiny
+	Learned hidden layer representation:
+	
+	\begin{center}
+	\begin{tabular}{lcrrrcr} \hline
+	\rowcolor[HTML]{99aabb} \multicolumn{1}{>{\columncolor[HTML]{99aabb}}c}{Input} & & \multicolumn{3}{>{\columncolor[HTML]{99aabb}}c}{Hidden}& &  \multicolumn{1}{>{\columncolor[HTML]{99aabb}}c}{Output}  \\
+	\rowcolor[HTML]{99aabb} \multicolumn{1}{>{\columncolor[HTML]{99aabb}}c}{} & & \multicolumn{3}{>{\columncolor[HTML]{99aabb}}c}{Values}& &\multicolumn{1}{>{\columncolor[HTML]{99aabb}}c}{}  \\ \hline \hline
+
+	\rowcolor[HTML]{bbccdd} 10000000 & $\rightarrow$ & .89 & .04 & .08 & $\rightarrow$ & 10000000 \\
+	\rowcolor[HTML]{ccddee} 01000000 & $\rightarrow$ & .01 & .11 & .88 & $\rightarrow$ & 01000000 \\
+	\rowcolor[HTML]{bbccdd} 00100000 & $\rightarrow$ & .01 & .97 & .27 & $\rightarrow$ & 00100000 \\
+	\rowcolor[HTML]{ccddee} 00010000 & $\rightarrow$ & .99 & .97 & .71 & $\rightarrow$ & 00010000 \\
+	\rowcolor[HTML]{bbccdd} 00001000 & $\rightarrow$ & .03 & .05 & .02 & $\rightarrow$ & 00001000 \\
+	\rowcolor[HTML]{ccddee} 00000100 & $\rightarrow$ & .22 & .99 & .99 & $\rightarrow$ & 00000100 \\
+	\rowcolor[HTML]{bbccdd} 00000010 & $\rightarrow$ & .80 & .01 & .98 & $\rightarrow$ & 00000010 \\
+	\rowcolor[HTML]{ccddee} 00000001 & $\rightarrow$ & .60 & .94 & .01 & $\rightarrow$ & 00000001 \\ 
+	\end{tabular}
+	\end{center}
+\end{slide}
+
+
+\begin{slide}{  Training  } 
+\begin{figure}
+	\centering
+	\includegraphics[scale=0.8]{./../bookps/ann-output-errors.eps}
+\end{figure}
+\end{slide}
+
+
+\begin{slide}{  Training  } 
+\begin{figure}
+	\centering
+	\includegraphics[scale=0.8]{./../bookps/ann-encoding.eps}
+\end{figure}
+\end{slide}
+
+
+\begin{slide}{  Training  } 
+\begin{figure}
+	\centering
+	\includegraphics[scale=0.8]{./../bookps/ann-hidden-weights.eps}
+\end{figure}
+\end{slide}
+
+\begin{slide}{  Convergence of Backpropagation  } 
+\tiny
+\begin{itemize}
+ \item  Gradient descent to some local minimum
+	\begin{itemize}
+	\item Perhaps not global minimum...
+	\item Add momentum
+	\item Stochastic gradient descent
+	\item Train multiple nets with different initial weights
+	\end{itemize}
+\item Nature of convergence
+	\begin{itemize}
+	\item Initialize weights near zero
+	\item Therefore, initial networks near-linear
+	\item Increasingly non-linear functions possible as training progresses
+	\end{itemize}
+\end{itemize}
+\end{slide}
+
+
+
+\begin{slide}{  Expressive Capabilities of ANNs  } 
+\tiny
+\begin{itemize} 
+ \item  Boolean functions:
+	\begin{itemize}
+	\item Every boolean function can be represented by network with single hidden
+	layer
+	\item but might require exponential (in number of inputs) hidden units
+	\end{itemize}
+\item Continuous functions:
+	\begin{itemize}
+	\item
+	Every bounded continuous function can be approximated with arbitrarily small
+	error, by network with one hidden layer 
+	
+	\item
+	Any function can be approximated to arbitrary accuracy by a network with two
+	hidden layers.
+	\end{itemize}
+\end{itemize}
+\end{slide}
+
+
+
+\begin{slide}{  Overfitting in ANNs  } 
+\begin{figure}
+	\centering
+	\includegraphics[scale=0.5]{./../bookps/ann-f1.ps}
+\end{figure}
+\begin{figure}
+	\centering
+	\includegraphics[scale=0.5]{./../bookps/ann-f2.ps}
+\end{figure}
+
+\end{slide}
+
+
+\begin{slide}{ Other ANN Forms} 
+\tiny
+\begin{itemize}
+ \item The ANN structure we have considered to date is considered to be the simplest. There are many other forms e.g. 
+	\begin{itemize}
+ 	\item Recurrent networks
+		\begin{itemize}
+	 	\item Consists of a bi-directional data flow within the network. 
+		\end{itemize}
+	\item Kohonen map
+		\begin{itemize}
+		\item Essentially based on using unsupervised learning. 
+		\end{itemize}
+	\item Stochastic neural networks
+		\begin{itemize}
+		\item Introduces random sampling into the network which aims to facilitate applications in areas with significant uncertainty in inputs e.g. risk analysis, fluid dynamics etc
+		\end{itemize}
+	\item Modular neural networks
+		\begin{itemize}
+		\item Based on using a series of independent neural networks as one single entity which are moderated by some intermediary i.e. each individual network is a module in the system.
+		\end{itemize}
+	\end{itemize}
+\end{itemize}
+\end{slide}
+
+
+\begin{slide}{Some Sample Uses of ANN} 
+\tiny
+\begin{itemize}
+ \item Financial forecasting
+ \item Fraud detection
+\item Automotive industry
+	\begin{itemize}
+	 \item DB9 uses a ANN to ensure its engine doesn't misfire
+ 	\end{itemize}
+\item Washing machines 
+	\begin{itemize}
+	 \item Optimise water flow and detergent usage
+ 	\end{itemize}
+\item Digital cameras
+	\begin{itemize}
+	 \item Face detection, adjust various parameters depending on the environmental conditions
+ 	\end{itemize}
+\item Gaming
+\item Medical diagnosis
+\end{itemize}
+\end{slide}
+
+
+\begin{slide}{Summary}
+\begin{itemize}
+\item Threshold units - basis of ANN
+\item Gradient descent - Error model
+\item Multilayer networks 
+\item Backpropagation - Commonly used technique
+\item Overfitting - Classical problem
+\item Alternate ANN Forms
+\item Sample Usages
+\end{itemize}
+\end{slide}
+
+
+
+
+
+\end{document}

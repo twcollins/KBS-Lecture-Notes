@@ -1,0 +1,472 @@
+\documentclass[%
+pdf,
+%nocolorBG,
+colorBG,
+slideColor,
+tcrico,
+%slideBW,
+%draft,
+%frames
+%azure
+%contemporain
+%nuancegris
+%troispoints
+%lignesbleues
+%darkblue
+%alienglow
+%autumn
+%default
+%gyom
+%blends
+]{prosper}
+\usepackage{amsmath}
+%\usepackage[table]{xcolor}
+\usepackage{colortbl}
+\usepackage{graphicx}
+
+
+\begin{document}
+
+\begin{slide}{Knowledge Based Technologies}
+\large
+\textbf{Lecture 3} 
+\newline
+\textbf{Decision Tree Learning}
+
+\small
+John Moore \& Thomas Collins
+
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{slide}{Lecture Overview}
+\begin{itemize}
+\item Decision tree representation
+\item ID3 learning algorithm
+\item Entropy, Information gain
+\item Overfitting
+\end{itemize}
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{slide}{Decision Tree for PlayTennis}
+\begin{figure}
+	\centering
+	\includegraphics[scale=0.8]{./../bookps/dt-f1.ps}
+\end{figure}
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{slide}{Decision Trees \red \ }
+\begin{itemize}
+ \item Decision tree representation:
+	\begin{itemize}
+	\item Each internal node tests an attribute
+	\item Each branch corresponds to attribute value
+	\item Each leaf node assigns a classification
+	\end{itemize}
+\item How would we represent:
+	\begin{itemize}
+	\item $\wedge, \vee,$ XOR
+	\item $(A \wedge B) \vee (C \wedge \neg D \wedge E)$
+	\item $M$ of $N$
+\end{itemize}
+\end{itemize}
+\end{slide}
+
+
+\begin{slide}{When to Consider Decision Trees } 
+\begin{itemize}
+\item Instances describable by attribute--value pairs
+\item Target function is discrete valued
+\item Disjunctive hypothesis may be required
+\item Possibly noisy training data
+\end{itemize}
+
+\begin{itemize}
+\item Examples:
+	\begin{itemize}
+	\item Equipment or medical diagnosis
+	\item Credit risk analysis
+	\item Modeling calendar scheduling preferences 
+	\end{itemize}
+\end{itemize}
+\end{slide}
+
+\begin{slide}{Top-Down Induction of Decision Trees} 
+\begin{itemize}
+\item Main loop:
+	\begin{enumerate}
+	\item $A \gets$ the ''best'' decision attribute for next $node$
+	\item Assign $A$ as decision attribute for $node$
+	\item For each value of $A$, create new descendant of $node$
+	\item Sort training examples to leaf nodes
+	\item If training examples perfectly classified, Then STOP, Else iterate over new leaf nodes
+	\end{enumerate}
+\item Which attribute is best? 
+\end{itemize}
+\begin{figure}
+	\centering
+	\includegraphics[scale=0.7]{./../bookps/dt-s1.ps}
+\end{figure}
+\end{slide}
+
+
+\begin{slide}{Entropy} 
+\begin{figure}
+	\centering
+	\includegraphics[scale=0.4]{./../bookps/dt-fig-entropy-new.ps}
+\end{figure}
+\tiny
+\begin{itemize}
+\item $S$ is a sample of training examples
+\item $p_{\oplus}$ is the proportion of positive examples in $S$
+\item $p_{\ominus}$ is the proportion of negative examples in $S$
+\item Entropy measures the impurity of $S$
+\[ Entropy(S) \equiv  - p_{\oplus} \log_{2} p_{\oplus} -  p_{\ominus} \log_{2}
+p_{\ominus} \]
+\end{itemize}
+\end{slide}
+
+
+\begin{slide}{Entropy cdt} 
+\tiny
+\begin{description}
+\item $Entropy(S)$ = expected number of bits needed to encode class ($\oplus$ or $\ominus$) of randomly drawn member of $S$ (under the optimal, shortest-length code)
+\end{description}
+
+\begin{itemize}
+\item Why?
+\item Information theory: optimal length code assigns 
+	\begin{itemize}
+	\item $- \log_{2}p$ bits to message having probability $p$.
+	\end{itemize}
+\item So, expected number of bits to encode $\oplus$ or $\ominus$ of random member
+of $S$:
+	\begin{itemize}
+	\item \[ p_{\oplus} (-\log_{2} p_{\oplus}) + p_{\ominus} (-\log_{2} p_{\ominus}) \]
+	\item \[ Entropy(S) \equiv  - p_{\oplus} \log_{2} p_{\oplus} -  p_{\ominus} \log_{2}
+p_{\ominus} \]
+	\end{itemize}
+\end{itemize}
+\end{slide}
+
+
+
+\begin{slide}{Information Gain } 
+\tiny
+\begin{itemize}
+\item $Gain(S,A)$ = expected reduction in entropy due to sorting on $A$
+\item \[ Gain(S,A) \equiv Entropy(S)\ - \sum_{v \in Values(A)} \frac{|S_{v}|}{|S|}
+Entropy(S_{v}) \]
+\end{itemize}
+\begin{figure}
+	\centering
+	\includegraphics[scale=0.9]{./../bookps/dt-s1.ps}
+\end{figure}
+\end{slide}
+
+
+\begin{slide}{Training Examples } 
+\tiny
+	\begin{center}
+	\begin{tabular}{cccccc} \hline
+	\rowcolor[HTML]{99aabb} Day & Outlook & Temperature & Humidity & Wind & PlayTennis \\ \hline \hline
+	\rowcolor[HTML]{bbccdd} D1 & Sunny & Hot & High & Weak & No \\
+	\rowcolor[HTML]{ccddee} D2 & Sunny & Hot & High & Strong & No \\
+	\rowcolor[HTML]{bbccdd} D3 & Overcast & Hot & High & Weak & Yes \\
+	\rowcolor[HTML]{ccddee} D4 & Rain & Mild & High & Weak & Yes \\
+	\rowcolor[HTML]{bbccdd} D5 & Rain & Cool & Normal & Weak & Yes \\
+	\rowcolor[HTML]{ccddee} D6 & Rain & Cool & Normal & Strong & No \\
+	\rowcolor[HTML]{bbccdd} D7 & Overcast & Cool & Normal & Strong & Yes \\
+	\rowcolor[HTML]{ccddee} D8 & Sunny & Mild & High & Weak & No \\
+	\rowcolor[HTML]{bbccdd} D9 & Sunny & Cool & Normal & Weak & Yes \\
+	\rowcolor[HTML]{ccddee} D10 & Rain & Mild & Normal & Weak & Yes \\
+	\rowcolor[HTML]{bbccdd} D11 & Sunny & Mild & Normal & Strong & Yes \\
+	\rowcolor[HTML]{ccddee} D12 & Overcast & Mild & High & Strong & Yes \\
+	\rowcolor[HTML]{bbccdd} D13 & Overcast & Hot & Normal & Weak & Yes \\
+	\rowcolor[HTML]{ccddee} D14 & Rain & Mild & High & Strong & No \\  
+	\end{tabular}
+	\end{center}
+\end{slide}
+
+\begin{slide}{Selecting the Next Attribute  } 
+\begin{figure}
+	\centering
+	\includegraphics[scale=1.0]{./../bookps/dt-inf.ps}
+\end{figure}
+\end{slide}
+
+\begin{slide}{Selecting the Next Attribute ctd } 
+\begin{figure}
+	\centering
+	\includegraphics[scale=0.5]{./../bookps/dt-t.ps}
+\end{figure}
+\end{slide}
+
+
+\begin{slide}{Hypothesis Space Search by ID3 } 
+\begin{figure}
+	\centering
+	\includegraphics[scale=0.9]{./../bookps/dt-search.ps}
+\end{figure}
+\end{slide}
+
+\begin{slide}{Hypothesis Space Search by ID3 ctd} 
+\begin{itemize}
+\item Hypothesis space is complete!
+	\begin{itemize} 
+	\item Target function surely in there... 
+	\end{itemize}
+\item Outputs a single hypothesis (which one?)
+	\begin{itemize} 
+	\item Can't play 20 questions... 
+	\end{itemize}
+\item No back tracking
+	\begin{itemize} 
+	\item Local minima... 
+	\end{itemize}
+\item Statisically-based search choices
+	\begin{itemize} 
+	\item Robust to noisy data... 
+	\end{itemize}
+\item Inductive bias: approx ``prefer shortest tree''
+\end{itemize}
+\end{slide}
+
+
+\begin{slide}{Inductive Bias in ID3 } 
+\begin{itemize}
+ \item Note $H$ is the power set of instances $X$
+	\begin{itemize}
+	 \item 	$\to $Unbiased?
+	\end{itemize}
+\item  Not really...
+	\begin{itemize}
+	\item Preference for short trees, and for those with high information gain attributes near the root
+	\item Bias is a {\em preference} for some hypotheses, rather than a {\em restriction} of hypothesis space $H$
+	\end{itemize}
+\item Occam's razor: prefer the shortest hypothesis that fits the data
+\end{itemize}
+\end{slide}
+
+\begin{slide}{Occam's Razor} 
+\begin{itemize} 
+ \item Why prefer short hypotheses?
+ \item  Argument in favor:
+	\begin{itemize}
+	\item Fewer short hyps. than long hyps.
+	\item[$\to$] a short hyp that fits data unlikely to be coincidence
+	\item[$\to$] a long hyp that fits data might be coincidence
+	\end{itemize}
+\item  Argument opposed:
+	\begin{itemize}
+	\item There are many ways to define small sets of hyps
+	\item e.g., all trees with a prime number of nodes that use attributes
+	beginning with ``Z''
+	\item What's so special about small sets based on {\em size} of hypothesis??
+	\end{itemize}
+\end{itemize}
+\end{slide}
+
+\begin{slide}{Overfitting in Decision Trees } 
+\small
+\begin{itemize} 
+ \item Consider adding noisy training example \#15:
+	\begin{itemize} 
+ 	\item  \[ Sunny,\  Hot,\  Normal,\  Strong,\ PlayTennis=No \]
+	\end{itemize}
+\item What effect on earlier tree?
+\end{itemize}
+\begin{figure}
+	\centering
+	\includegraphics[scale=0.5]{./../bookps/dt-f1.ps}
+\end{figure}
+\end{slide}
+
+
+\begin{slide}{Overfitting} 
+\begin{itemize}
+ \item  Consider error of hypothesis $h$ over
+	\begin{itemize}
+	\item  Training data: $error_{train}(h)$
+	\item  Entire distribution $\cal{D}$ of data: $error_{\cal{D}}(h)$
+	\end{itemize}
+\item Hypothesis $h \in H$ {\bf overfits} training data if there is an alternative hypothesis $h' \in H$ such that
+\[  error_{train}(h) < error_{train}(h') \] and \[  error_{\cal{D}}(h) > error_{\cal{D}}(h') \]
+\end{itemize}
+\end{slide}
+
+
+
+\begin{slide}{Overfitting in Decision Tree Learning } 
+\begin{figure}
+	\centering
+	\includegraphics[scale=1]{./../bookps/dt-train-val.eps}
+\end{figure}
+\end{slide}
+
+
+
+\begin{slide}{\large Avoiding Overfitting \red \ } 
+\begin{itemize}
+ \item  How can we avoid overfitting?
+	\begin{itemize}
+	\item stop growing when data split not statistically significant
+	\item grow full tree, then post-prune
+	\end{itemize}
+\item  How to select ``best'' tree:
+	\begin{itemize}
+	\item Measure performance over training data
+	\item  Measure performance over separate validation data set
+	\item MDL: minimize $size(tree) + size(misclassifications(tree))$
+	\end{itemize}
+\end{itemize}
+\end{slide}
+
+
+\begin{slide}{Reduced-Error Pruning } 
+	\begin{itemize}
+ 	\item Split data into $training$ and $validation$ set
+	\item Do until further pruning is harmful:
+		\begin{enumerate}
+ 		\item Evaluate impact on $validation$ set of pruning each possible node (plus those below it)
+		\item Greedily remove the one that most improves $validation$ set accuracy
+		\end{enumerate}
+	\item produces smallest version of most accurate subtree
+	\item What if data is limited?
+\end{itemize}
+\end{slide}
+
+
+\begin{slide}{Effect of Reduced-Error Pruning } 
+\begin{figure}
+	\centering
+	\includegraphics[scale=1]{./../bookps/dt-prune.eps}
+\end{figure}
+\end{slide}
+
+
+\begin{slide}{Rule Post-Pruning } 
+\begin{enumerate}
+\item Convert tree to equivalent set of rules
+\item Prune each rule independently of others
+\item Sort final rules into desired sequence for use
+\end{enumerate}
+\begin{itemize}
+\item This has traditionally been the most frequently used method (e.g., C4.5 )
+\end{itemize}
+\end{slide}
+
+
+\begin{slide}{Converting A Tree to Rules } 
+\begin{figure}
+	\centering
+	\includegraphics[scale=0.5]{./../bookps/dt-f1.ps}
+\end{figure}
+\small
+\begin{tabular}{ll}
+   If & $(Outlook=Sunny) \wedge (Humidity=High)$ \\
+   Then & $PlayTennis=No$ \\
+   If & $(Outlook=Sunny) \wedge (Humidity=Normal)$ \\
+   Then & $PlayTennis=Yes$ \\
+   \ldots &  \\
+\end{tabular}
+\end{slide}
+
+
+
+
+\begin{slide}{Continuous Valued Attributes } 
+\begin{itemize}
+\item Create a discrete attribute to test continuous
+	\begin{itemize}
+	\item $Temperature = 82.5$
+	\item $(Temperature>72.3) = t,f$
+	\end{itemize}
+\end{itemize}
+\begin{center}
+\ \\
+\ \\
+\begin{tabular}{lcccccc} \hline
+  \rowcolor[HTML]{bbccdd} {\em Temperature}: &40 &48 &60 &72 &80 &90 \\
+  \rowcolor[HTML]{ccddee} {\em PlayTennis}:&No &No&Yes&Yes&Yes &No \\ \hline
+\end{tabular}
+\end{center}
+\end{slide}
+
+
+
+\begin{slide}{Attributes with Many Values } 
+\begin{itemize}
+\item  Problem: 
+	\begin{itemize}
+	\item If attribute has many values, $Gain$ will select it
+	\item Imagine using $Date = Jun\_3\_1996$ as attribute
+	\end{itemize}
+\item One approach: use $GainRatio$ instead
+\end{itemize}
+\[GainRatio(S,A) \equiv \frac{Gain(S,A)}{SplitInformation(S,A)} \]
+\[ SplitInformation(S,A) \equiv - \sum_{i=1}^{c} \frac{|S_{i}|}{|S|} \log_{2}
+\frac{|S_{i}|}{|S|} \]
+where $S_{i}$ is subset of $S$ for which $A$ has value $v_{i}$
+\end{slide}
+
+
+\begin{slide}{Attributes with Costs } 
+\tiny
+\begin{itemize}
+ \item Consider 
+	\begin{itemize}
+	\item medical diagnosis,  $BloodTest$ has cost of perhaps \pounds 150
+	\item robotics, $Width\_from\_1ft$ has cost 45 sec.
+	\end{itemize}
+\item How to learn a consistent tree with low expected cost? One approach: replace gain by
+	\begin{itemize}
+	\item Tan and Schlimmer (1990)
+	\[ \frac{Gain^{2}(S,A)}{Cost(A)}. \]
+	\item Nunez (1988)
+	\[  \frac{2^{Gain(S,A)} - 1}{(Cost(A) + 1)^{w}} \]
+	where $w \in [0,1]$ determines importance of cost
+	\end{itemize}
+\end{itemize}
+\end{slide}
+
+
+\begin{slide}{Unknown Attribute Values } 
+\begin{itemize}
+\item What if some examples missing values of $A$?
+ \item Use training example anyway, sort through tree
+	\begin{itemize}
+	\item If node $n$ tests $A$, assign most common value of $A$ among other examples
+sorted to node $n$
+	\item Assign most common value of $A$ among other examples with same target value
+	\item Assign probability $p_{i}$ to each possible value $v_{i}$ of $A$
+		\begin{itemize}
+		\item Assign fraction $p_{i}$ of example to each descendant in tree
+		\end{itemize}
+	\end{itemize}
+\item Classify new examples in same fashion
+\end{itemize}
+\end{slide}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{slide}{Review}
+\begin{itemize}
+\item Decision tree representation
+\item ID3 learning algorithm
+\item Entropy, Information gain
+\item Overfitting
+\end{itemize}
+
+\end{slide}
+
+
+\end{document}
